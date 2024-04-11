@@ -1,3 +1,7 @@
+package App;
+
+import App.GUI;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -9,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.regex.Pattern;
 
 public class MenuBarEdit {
@@ -42,20 +45,29 @@ public class MenuBarEdit {
         cut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                cutToClipboard();
+                int [] selectedCol = GUI.activeTable.getSelectedColumns();
+                int [] selectedRow = GUI.activeTable.getSelectedRows();
+                JTable activeTable = GUI.activeTable;
+
+                cutToClipboard(selectedCol, selectedRow, activeTable);
             }
         });
         copy.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                copyToClipboard();
+                int [] selectedCol = GUI.activeTable.getSelectedColumns();
+                int [] selectedRow = GUI.activeTable.getSelectedRows();
+                JTable activeTable = GUI.activeTable;
+
+                copyToClipboard(selectedCol, selectedRow, activeTable);
             }
         });
 
         paste.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JDialog dialog = dialog();
+                JTable activeTable = GUI.activeTable;
+                JDialog dialog = dialog(activeTable);
             }
         });
         find.addActionListener(new ActionListener() {
@@ -73,14 +85,11 @@ public class MenuBarEdit {
         });
     }
 
-    private void cutToClipboard(){
-        int [] selectedCol = GUI.activeTable.getSelectedColumns();
-        int [] selectedRow = GUI.activeTable.getSelectedRows();
-
+    public void cutToClipboard(int[] selectedCol, int[] selectedRow, JTable activeTable){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringBuilder cutData = new StringBuilder();
 
-        TableModel model = GUI.activeTable.getModel();
+        TableModel model = activeTable.getModel();
 
         for (int row : selectedRow) {
             for (int col : selectedCol) {
@@ -93,14 +102,11 @@ public class MenuBarEdit {
         StringSelection stringSelection = new StringSelection(cutData.toString());
         clipboard.setContents(stringSelection, null);
     }
-    private void copyToClipboard(){
-        int [] selectedCol = GUI.activeTable.getSelectedColumns();
-        int [] selectedRow = GUI.activeTable.getSelectedRows();
-
+    private void copyToClipboard(int[] selectedCol, int[] selectedRow, JTable activeTable){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringBuilder copyData = new StringBuilder();
 
-        TableModel model = GUI.activeTable.getModel();
+        TableModel model = activeTable.getModel();
 
         for (int row : selectedRow) {
             for (int col : selectedCol) {
@@ -112,8 +118,7 @@ public class MenuBarEdit {
         StringSelection stringSelection = new StringSelection(copyData.toString());
         clipboard.setContents(stringSelection, null);
     }
-    //метод хорошо работает с символами, но когда дело доходит до байтов, тогда вопросики, нужно подумать и подправить
-    private void pasteFromClipboardToHex(){
+    private void pasteFromClipboardToHex(JTable activeTable){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clipboard.getContents(this);
         if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
@@ -121,24 +126,24 @@ public class MenuBarEdit {
                 String pasteData = (String) transferable.getTransferData(DataFlavor.stringFlavor);
 
                 // Вставляем каждый символ в соответствующую ячейку текущей активной таблицы
-                int startRow = GUI.activeTable.getSelectedRow();
-                int startCol = GUI.activeTable.getSelectedColumn();
+                int startRow = activeTable.getSelectedRow();
+                int startCol = activeTable.getSelectedColumn();
 
                 int row = startRow;
                 int col = startCol;
 
-                if (GUI.activeTable == hexTable){
+                if (activeTable == hexTable){
                     String[] characters = pasteData.split(" ");
 
                     for (String character : characters) {
-                        if (row < GUI.activeTable.getRowCount() && col < GUI.activeTable.getColumnCount()) {
+                        if (row < activeTable.getRowCount() && col < activeTable.getColumnCount()) {
                             String value = character;
 
-                            GUI.activeTable.setValueAt(value, row, col);
+                            activeTable.setValueAt(value, row, col);
                             col++;
 
                             // Если достигнут конец строки таблицы, переходим на следующую строку
-                            if (col == GUI.activeTable.getColumnCount()) {
+                            if (col == activeTable.getColumnCount()) {
                                 col = 1;
                                 row++;
                             }
@@ -151,14 +156,14 @@ public class MenuBarEdit {
                     char[] characters = pasteData.toCharArray();
 
                     for (char character : characters) {
-                    if (row < GUI.activeTable.getRowCount() && col < GUI.activeTable.getColumnCount()) {
+                    if (row < activeTable.getRowCount() && col < activeTable.getColumnCount()) {
                         String value = String.valueOf(character);
 
-                        GUI.activeTable.setValueAt(value, row, col);
+                        activeTable.setValueAt(value, row, col);
                         col++;
 
                         // Если достигнут конец строки таблицы, переходим на следующую строку
-                        if (col == GUI.activeTable.getColumnCount()) {
+                        if (col == activeTable.getColumnCount()) {
                             col = 1;
                             row++;
                         }
@@ -172,7 +177,7 @@ public class MenuBarEdit {
             }
         }
     }
-    private void pasteFromClipboardToChar(){
+    private void pasteFromClipboardToChar(JTable activeTable){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clipboard.getContents(this);
 
@@ -184,28 +189,28 @@ public class MenuBarEdit {
                 char[] characters = pasteData.toCharArray();
 
                 // Вставляем каждый символ в соответствующую ячейку текущей активной таблицы
-                int startRow = GUI.activeTable.getSelectedRow();
-                int startCol = GUI.activeTable.getSelectedColumn();
+                int startRow = activeTable.getSelectedRow();
+                int startCol = activeTable.getSelectedColumn();
 
                 int row = startRow;
                 int col = startCol;
 
                 for (char character : characters) {
-                    if (row < GUI.activeTable.getRowCount() && col < GUI.activeTable.getColumnCount() ) {
+                    if (row < activeTable.getRowCount() && col < activeTable.getColumnCount() ) {
                         String value = String.valueOf(character);
 
-                        if (GUI.activeTable == hexTable) {
+                        if (activeTable == hexTable) {
                             value = String.format("%02X", (int) character);
                         } else {
                             value = String.valueOf(character);
                         }
 
 
-                        GUI.activeTable.setValueAt(value, row, col);
+                        activeTable.setValueAt(value, row, col);
                         col++;
 
                         // Если достигнут конец строки таблицы, переходим на следующую строку
-                        if (col == GUI.activeTable.getColumnCount()) {
+                        if (col == activeTable.getColumnCount()) {
                             col = 1;
                             row++;
                         }
@@ -218,7 +223,7 @@ public class MenuBarEdit {
             }
         }
     }
-    private JDialog dialog(){
+    private JDialog dialog(JTable activeTable){
         JDialog dialog = new JDialog((JFrame)null, "Вставка");
 
         JLabel lbal = new JLabel("Как интерпретировать даные?");
@@ -241,13 +246,13 @@ public class MenuBarEdit {
             public void actionPerformed(ActionEvent e) {
                 if ((String)comboBox.getSelectedItem() == "Текст"){
                     try {
-                        pasteFromClipboardToChar();
+                        pasteFromClipboardToChar(activeTable);
                     } catch (NumberFormatException ex){
                         JOptionPane.showMessageDialog(null,"Неверные значения!");
                     }
                 } else{
                     try {
-                        pasteFromClipboardToHex();
+                        pasteFromClipboardToHex(activeTable);
                     } catch (NumberFormatException ex){
                         JOptionPane.showMessageDialog(null,"Неверные значения!");
                     }

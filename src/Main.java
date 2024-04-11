@@ -1,3 +1,7 @@
+import App.ByteArray;
+import App.GUI;
+import Test.ByteArrayTest;
+
 import javax.swing.*;
 
 public class Main {

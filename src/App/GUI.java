@@ -1,3 +1,5 @@
+package App;
+
 import javax.swing.*;
 import java.awt.Rectangle;
 import javax.swing.JViewport;
