@@ -1,7 +1,5 @@
 package App;
 
-import App.GUI;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -102,7 +100,7 @@ public class MenuBarEdit {
         StringSelection stringSelection = new StringSelection(cutData.toString());
         clipboard.setContents(stringSelection, null);
     }
-    private void copyToClipboard(int[] selectedCol, int[] selectedRow, JTable activeTable){
+    public void copyToClipboard(int[] selectedCol, int[] selectedRow, JTable activeTable){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringBuilder copyData = new StringBuilder();
 
@@ -319,7 +317,7 @@ public class MenuBarEdit {
         searchDialog.setVisible(true);
     }
 
-    private void find(JTable table1, JTable table2, DefaultTableModel model, String[] arr){
+    public void find(JTable table1, JTable table2, DefaultTableModel model, String[] arr){
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
             table1.setRowSorter(sorter);
             table2.setRowSorter(sorter);
