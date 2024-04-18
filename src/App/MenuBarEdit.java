@@ -116,9 +116,10 @@ public class MenuBarEdit {
         StringSelection stringSelection = new StringSelection(copyData.toString());
         clipboard.setContents(stringSelection, null);
     }
-    private void pasteFromClipboardToHex(JTable activeTable){
+    public void pasteFromClipboardToHex(JTable activeTable){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clipboard.getContents(this);
+
         if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
             try {
                 String pasteData = (String) transferable.getTransferData(DataFlavor.stringFlavor);
@@ -175,7 +176,7 @@ public class MenuBarEdit {
             }
         }
     }
-    private void pasteFromClipboardToChar(JTable activeTable){
+    public void pasteFromClipboardToChar(JTable activeTable){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clipboard.getContents(this);
 
@@ -199,18 +200,28 @@ public class MenuBarEdit {
 
                         if (activeTable == hexTable) {
                             value = String.format("%02X", (int) character);
+                            activeTable.setValueAt(value, row, col);
+                            col++;
+                            System.out.println("hex");
+
+                            // Если достигнут конец строки таблицы, переходим на следующую строку
+                            if (col == activeTable.getColumnCount()) {
+                                col = 1;
+                                row++;
+                            }
                         } else {
                             value = String.valueOf(character);
-                        }
 
+                            activeTable.setValueAt(value, row, col);
+                            col++;
 
-                        activeTable.setValueAt(value, row, col);
-                        col++;
+                            System.out.println("char");
 
-                        // Если достигнут конец строки таблицы, переходим на следующую строку
-                        if (col == activeTable.getColumnCount()) {
-                            col = 1;
-                            row++;
+                            // Если достигнут конец строки таблицы, переходим на следующую строку
+                            if (col == activeTable.getColumnCount()) {
+                                col = 1;
+                                row++;
+                            }
                         }
                     } else {
                         break;

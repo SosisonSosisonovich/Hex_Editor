@@ -42,34 +42,8 @@ public class MenuBarFile {
 
                 if(a != JFileChooser.CANCEL_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
+                    open(selectedFile, hexModel);
 
-                    try {
-                        ByteArray byteArray = new ByteArray(selectedFile);
-                        int index = 0;
-                        int count = hexModel.getColumnCount()*hexModel.getRowCount();
-
-                        //проверка на наличие места для данных, если места не хватает, то добавляется строка до тех пор, пока не станет достаточно
-                        if (count < byteArray.getSize()){
-                            while (count >= byteArray.getSize()){
-                                hexModel.addRow(new Object[hexModel.getColumnCount()]);
-                                count+=hexModel.getColumnCount();
-                            }
-                        }
-
-                        //заполнение ячеек таблицы
-                        for (int i = 0; i < hexModel.getRowCount(); i++) {
-                            for (int j = 1; j < hexModel.getColumnCount(); j++) {
-                                if(index<byteArray.getSize()) {
-                                    String hex = Integer.toHexString(byteArray.getByte(index) & 0xFF);
-                                    hexModel.setValueAt(hex, i, j);
-                                    index++;
-                                } else break;
-                            }
-                        }
-
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
                 }else {
                     System.out.println("Отмена действия.");
                 }
@@ -98,23 +72,7 @@ public class MenuBarFile {
                     File selectedDirectory = fileChooser.getSelectedFile();
                     File file = new File(String.valueOf(selectedDirectory)+".bin");
 
-
-                   try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
-                        for (String[] array: tableData){
-                            for (int i = 1; i<array.length; i++){
-                                if (array[i] == null){
-                                    bos.write((byte) 0xFF);
-                                }else {
-                                    int arr = Integer.parseInt(array[i], 16);
-                                    bos.write((byte)arr);
-                                }
-                            }
-                        }
-
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-
+                    save(selectedDirectory, tableData);
                 } else{
                     System.out.println("Отмена действия.");
                 }
@@ -123,8 +81,47 @@ public class MenuBarFile {
     }
 
     //обновление таблицы
-    private void news(DefaultTableModel model){
+    public void news(DefaultTableModel model){
         model.setRowCount(0);
         model.setRowCount(50);
+    }
+
+    public void open(File selectedFile, DefaultTableModel hexModel){
+        try {
+            ByteArray byteArray = new ByteArray(selectedFile);
+            int index = 0;
+            int count = hexModel.getColumnCount()*hexModel.getRowCount();
+
+            //заполнение ячеек таблицы
+            for (int i = 0; i < hexModel.getRowCount(); i++) {
+                for (int j = 1; j < hexModel.getColumnCount(); j++) {
+                    if(index<byteArray.getSize()) {
+                        String hex = Integer.toHexString(byteArray.getByte(index) & 0xFF);
+                        hexModel.setValueAt(hex, i, j);
+                        index++;
+                    } else break;
+                }
+            }
+
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    public void save(File file,  List<String[]> tableData){
+        try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
+            for (String[] array: tableData){
+                for (int i = 1; i<array.length; i++){
+                    if (array[i] == null){
+                        bos.write((byte) 0xFF);
+                    }else {
+                        int arr = Integer.parseInt(array[i], 16);
+                        bos.write((byte)arr);
+                    }
+                }
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
