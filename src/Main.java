@@ -1,6 +1,4 @@
-import App.ByteArray;
-import App.GUI;
-import Test.ByteArrayTest;
+import main.GUI;
 
 import javax.swing.*;
 

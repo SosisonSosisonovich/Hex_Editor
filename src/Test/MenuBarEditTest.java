@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 
-import App.MenuBarEdit;
+import main.MenuBarEdit;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -126,9 +126,6 @@ public class MenuBarEditTest {
     public void pasteFromClipboardToCharTest(){
         charTable.setRowSelectionInterval(0, 0);
         charTable.setColumnSelectionInterval(1,2);
-
-        hexTable.setRowSelectionInterval(0, 0);
-        hexTable.setColumnSelectionInterval(1,2);
 
         String testData = "61 2d";
         StringSelection stringSelection = new StringSelection(testData);
