@@ -1,10 +1,7 @@
-package Test;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 
-import main.MenuBarEdit;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -147,11 +144,11 @@ public class MenuBarEditTest {
         menuBarEdit.find(hexTable, charTable, hexModel,arr);
 
         assertEquals(1, hexTable.getRowCount());
-        assertEquals("E", hexTable.getValueAt(0, 0));
-        assertEquals("F", hexTable.getValueAt(0, 1));
+        assertEquals("E", hexTable.getValueAt(0, 1));
+        assertEquals("F", hexTable.getValueAt(0, 2));
 
         assertEquals(1, charTable.getRowCount());
-        assertEquals("F", charTable.getValueAt(0, 0));
-        assertEquals("E", charTable.getValueAt(0, 1));
+        assertEquals("F", charTable.getValueAt(0, 1));
+        assertEquals("E", charTable.getValueAt(0, 2));
     }
 }

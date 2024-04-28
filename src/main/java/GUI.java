@@ -1,5 +1,3 @@
-package main;
-
 import javax.swing.*;
 import java.awt.Rectangle;
 import javax.swing.JViewport;
@@ -31,7 +29,7 @@ public class GUI implements Serializable {
 
     public GUI() {
         frame = new JFrame("Hex-Editor");
-        frame.setResizable(false);
+        //frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1000, 600);
 
@@ -41,6 +39,7 @@ public class GUI implements Serializable {
 
     void run(){
         panel = new JPanel(new GridLayout());
+
         //запрет на изменение offset'а
         DefaultTableModel hexModel = new DefaultTableModel(colNames(),50) {
             @Override
@@ -49,7 +48,7 @@ public class GUI implements Serializable {
             }
         };
 
-        DefaultTableModel charModel = new DefaultTableModel(50, 17){
+        DefaultTableModel charModel = new DefaultTableModel(50, 32){
             @Override
             public boolean isCellEditable(int row, int column) {
                 return column != 0;
@@ -111,6 +110,7 @@ public class GUI implements Serializable {
         hexTable = new JTable(hexModel);
         charTable = new JTable(charModel);
 
+        //флаг для определения активной на данной момент, дефолтная активная таблица hexTable
         activeTable = hexTable;
 
         JMenuBar jMenuBar = new JMenuBar();
@@ -125,11 +125,11 @@ public class GUI implements Serializable {
         JScrollBar sharedScrollBar = hexSP.getVerticalScrollBar();
         JScrollPane charSP = new JScrollPane(charTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         charSP.setVerticalScrollBar(sharedScrollBar);
-        charSP.setBorder(new EmptyBorder(0, 0, 0, 100));
+        charSP.setBorder(new EmptyBorder(0, 0, 0, 110));
 
         panel.add(hexSP);
         panel.add(charSP);
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        panel.setBorder(new EmptyBorder(0, 0, 20, 100));
 
         frame.add(panel);
         frame.setJMenuBar(jMenuBar);
@@ -141,9 +141,9 @@ public class GUI implements Serializable {
 
 
     private static Object[] colNames() {
-        Object[] object = new Object[17];
+        Object[] object = new Object[32];
         object[0] = "offset";
-        for (int i = 1; i < 17; i++) {
+        for (int i = 1; i < object.length; i++) {
             String hexName = Integer.toHexString(i - 1);
             object[i] = hexName;
         }
@@ -170,14 +170,15 @@ public class GUI implements Serializable {
         hexTable.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         charTable.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-        hexTable.getColumnModel().getColumn(0).setMaxWidth(70);
+        //подумать об размерах ячеек и setBarder, после закоммитить
+        hexTable.getColumnModel().getColumn(0).setMaxWidth(100);
         for (int i = 1; i <hexTable.getColumnCount(); i++) {
             hexTable.getColumnModel().getColumn(i).setMaxWidth(25);
         }
-
-        charTable.getColumnModel().getColumn(0).setMaxWidth(36);
+        //подумать об размерах ячеек и setBorder, после закоммитить
+        charTable.getColumnModel().getColumn(0).setMaxWidth(100);
         for (int i = 1; i <charTable.getColumnCount(); i++) {
-            charTable.getColumnModel().getColumn(i).setMaxWidth(20);
+            charTable.getColumnModel().getColumn(i).setMaxWidth(25);
         }
 
         hexTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
@@ -355,7 +356,7 @@ public class GUI implements Serializable {
 
     }
 
-   private static class ActiveCellEditorForChar extends AbstractCellEditor implements TableCellEditor{
+    private static class ActiveCellEditorForChar extends AbstractCellEditor implements TableCellEditor{
        private final JTextField text;
        private final JTable table;
 
@@ -409,9 +410,8 @@ public class GUI implements Serializable {
     }
     }
 
-
     // Метод для проверки, видима ли ячейка в таблице
-   private static boolean isCellVisible(JTable table, int row, int column) {
+    private static boolean isCellVisible(JTable table, int row, int column) {
         if (table.getParent() instanceof JViewport) {
             JViewport viewport = (JViewport) table.getParent();
             Rectangle rect = table.getCellRect(row, column, true);
@@ -421,8 +421,8 @@ public class GUI implements Serializable {
         return false;
    }
 
-   // Новая строка, если редактируется последняя строка таблицы
-   private static void addNewRow(JTable table){
+    // Новая строка, если редактируется последняя строка таблицы
+    private static void addNewRow(JTable table){
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.addTableModelListener(new TableModelListener() {
            @Override

@@ -1,22 +1,18 @@
-package Test;
-
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.io.File;
-import main.ByteArray;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ByteArrayTest {
     static byte[] bytes = {10, 20, 30, 40, 50};
 
     @Test
     public void getByteTest() throws IOException {
-        File testFile = File.createTempFile("Test", ".txt");
+        File testFile = File.createTempFile("test", ".txt");
         try (FileOutputStream fos = new FileOutputStream(testFile)) {
             fos.write(bytes);
         }
@@ -30,7 +26,7 @@ public class ByteArrayTest {
 
     @Test
     public void getSizeTest() throws IOException{
-        File testFile = File.createTempFile("Test", ".txt");
+        File testFile = File.createTempFile("test", ".txt");
         try (FileOutputStream fos = new FileOutputStream(testFile)) {
             fos.write(bytes);
         }
