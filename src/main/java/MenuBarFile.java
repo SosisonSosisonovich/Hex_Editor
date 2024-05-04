@@ -15,6 +15,7 @@ public class MenuBarFile {
         JMenuItem news = file.add(new JMenuItem("Новый"));
         JMenuItem open = file.add(new JMenuItem("Открыть"));
         JMenuItem save = file.add(new JMenuItem("Сохранить"));
+        JMenuItem saveAs = file.add(new JMenuItem("Сохранить как..."));
 
 
         news.setAccelerator(KeyStroke.getKeyStroke("ctrl N"));
@@ -68,9 +69,15 @@ public class MenuBarFile {
 
                 if (a != JFileChooser.CANCEL_OPTION){
                     File selectedDirectory = fileChooser.getSelectedFile();
-                    File file = new File(String.valueOf(selectedDirectory)+".bin");
+                    System.out.println(selectedDirectory);
 
-                    save(selectedDirectory, tableData);
+                    if (!selectedDirectory.exists()) {
+                        File file = new File(String.valueOf(selectedDirectory) + ".bin");
+                        save(file, tableData);
+                    }
+                    else { //если файл есть
+                        save(selectedDirectory, tableData);
+                    }
                 } else{
                     System.out.println("Отмена действия.");
                 }
@@ -105,6 +112,7 @@ public class MenuBarFile {
             throw new RuntimeException(ex);
         }
     }
+
     public void save(File file,  List<String[]> tableData){
         try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
             for (String[] array: tableData){

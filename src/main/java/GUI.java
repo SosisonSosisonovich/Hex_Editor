@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.Rectangle;
 import javax.swing.JViewport;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -126,6 +127,9 @@ public class GUI implements Serializable {
         JScrollPane charSP = new JScrollPane(charTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         charSP.setVerticalScrollBar(sharedScrollBar);
         charSP.setBorder(new EmptyBorder(0, 0, 0, 110));
+        Border border = BorderFactory.createLineBorder(new Color(76, 118, 181), 2);
+        charSP.setBorder(border);
+        hexSP.setBorder(border);
 
         panel.add(hexSP);
         panel.add(charSP);
@@ -261,6 +265,7 @@ public class GUI implements Serializable {
             }
         }
     }
+    //центрироваеие, выделение ячеек, offset
     public static class CellRenderForHex extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -281,8 +286,6 @@ public class GUI implements Serializable {
         return render;
     }
     }
-
-    //центрироваеие, выделение ячеек, offset
     private static class CellRenderForChar extends DefaultTableCellRenderer{
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -303,6 +306,7 @@ public class GUI implements Serializable {
             return render;
         }
     }
+
     private static class ActiveCellEditorForHex extends AbstractCellEditor implements TableCellEditor{
         private final JTextField text;
 
@@ -355,7 +359,6 @@ public class GUI implements Serializable {
         }
 
     }
-
     private static class ActiveCellEditorForChar extends AbstractCellEditor implements TableCellEditor{
        private final JTextField text;
        private final JTable table;
