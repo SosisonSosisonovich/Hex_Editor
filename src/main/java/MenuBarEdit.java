@@ -331,7 +331,7 @@ public class MenuBarEdit {
             table1.setRowSorter(sorter);
             table2.setRowSorter(sorter);
 
-            RowFilter<Object, Object> rowFilter = new RowFilter<Object, Object>() {
+            /*RowFilter<Object, Object> rowFilter = new RowFilter<Object, Object>() {
                 @Override
                 public boolean include(Entry<? extends Object, ? extends Object> entry) {
                     for (String term : arr) {
@@ -350,7 +350,31 @@ public class MenuBarEdit {
                     }
                     return true; // Все элементы найдены
                 }
-            };
-            sorter.setRowFilter(rowFilter);
+            };*/
+
+        RowFilter<Object, Object> rowFilter = new RowFilter<Object, Object>() {
+            @Override
+            public boolean include(Entry<? extends Object, ? extends Object> entry) {
+                // Создаем строку из значений текущей строки
+                StringBuilder rowValues = new StringBuilder();
+                for (int i = 0; i < entry.getValueCount(); i++) {
+                    Object value = entry.getValue(i);
+                    if (value != null) {
+                        rowValues.append(value.toString());
+                    }
+                }
+
+                // Создаем строку из терминов, заданных пользователем
+                StringBuilder searchTerm = new StringBuilder();
+                for (String term : arr) {
+                    searchTerm.append(term);
+                }
+
+                // Проверяем, содержится ли заданная пользователем последовательность в текущей строке
+                return rowValues.toString().contains(searchTerm.toString());
+            }
+        };
+
+        sorter.setRowFilter(rowFilter);
     }
 }
