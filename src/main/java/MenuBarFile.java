@@ -85,26 +85,37 @@ public class MenuBarFile {
         model.setRowCount(50);
     }
 
-    //создать буффер и загрузить в него данные определенного фрагмента данных сразу после создания. Повторно использовать этот же буфер для следующего фрагмента
     public void open(File selectedFile, DefaultTableModel hexModel){
-        try {
-            ByteArray byteArray = new ByteArray(selectedFile);
-            int index = 0;
+            try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile))){
+                String line;
+                int indexRow = 0;
+                int indexCol = 1; // Начинаем с 1, чтобы пропустить первый столбец
 
-            //заполнение ячеек таблицы
-            for (int i = 0; i < hexModel.getRowCount(); i++) {
-                for (int j = 1; j < hexModel.getColumnCount(); j++) {
-                    if(index<byteArray.getSize()) {
-                        String hex = Integer.toHexString(byteArray.getByte(index) & 0xFF);
-                        hexModel.setValueAt(hex, i, j);
+                while ((line = reader.readLine()) != null) {
+                    byte[] byteData = line.getBytes();
+                    int index = 0;
+
+                    while (index < byteData.length) {
+                        if (indexCol >= hexModel.getColumnCount()) {
+                            indexCol = 1; // Сброс к первому столбцу
+                            indexRow++; // Перейти на следующую строку
+                        }
+
+                        if (indexRow >= hexModel.getRowCount()) {
+                            break; // Остановиться, если достигнут конец таблицы
+                        }
+
+                        String hex = Integer.toHexString(byteData[index] & 0xFF);
+                        hexModel.setValueAt(hex, indexRow, indexCol);
                         index++;
-                    } else break;
+                        indexCol++;
+                    }
                 }
+            }catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     public void save(File file,  List<String[]> tableData){
