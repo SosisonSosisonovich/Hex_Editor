@@ -17,12 +17,6 @@ public class MenuBarFile {
         JMenuItem save = file.add(new JMenuItem("Сохранить"));
         JMenuItem saveAs = file.add(new JMenuItem("Сохранить как..."));
 
-
-        news.setAccelerator(KeyStroke.getKeyStroke("ctrl N"));
-        open.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));
-        save.setAccelerator(KeyStroke.getKeyStroke("ctrl S"));
-
-
         news.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -91,11 +85,11 @@ public class MenuBarFile {
         model.setRowCount(50);
     }
 
+    //создать буффер и загрузить в него данные определенного фрагмента данных сразу после создания. Повторно использовать этот же буфер для следующего фрагмента
     public void open(File selectedFile, DefaultTableModel hexModel){
         try {
             ByteArray byteArray = new ByteArray(selectedFile);
             int index = 0;
-            int count = hexModel.getColumnCount()*hexModel.getRowCount();
 
             //заполнение ячеек таблицы
             for (int i = 0; i < hexModel.getRowCount(); i++) {

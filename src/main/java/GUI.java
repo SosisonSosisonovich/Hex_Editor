@@ -37,7 +37,6 @@ public class GUI implements Serializable {
         run();
     }
 
-
     void run(){
         panel = new JPanel(new GridLayout());
 
@@ -117,6 +116,7 @@ public class GUI implements Serializable {
         JMenuBar jMenuBar = new JMenuBar();
         new MenuBarFile(jMenuBar,hexModel, charModel);
         new MenuBarEdit(jMenuBar,hexModel,charModel,hexTable,charTable);
+        new MenuBarView(jMenuBar,hexModel,charModel,hexTable,charTable);
 
         hexTable.getTableHeader().setReorderingAllowed(false);
         charTable.getTableHeader().setReorderingAllowed(false);
@@ -143,7 +143,6 @@ public class GUI implements Serializable {
         frame.repaint();
     }
 
-
     private static Object[] colNames() {
         Object[] object = new Object[32];
         object[0] = "offset";
@@ -153,7 +152,6 @@ public class GUI implements Serializable {
         }
         return object;
     }
-
 
     //внешний вид ячеек
     private void ColumnsAndRows() {
@@ -275,7 +273,7 @@ public class GUI implements Serializable {
 
             //offset
             if (column == 0){
-                setText(String.format("%08X",row*16));
+                setText(String.valueOf(row));
             }
             //изменение цвета ячееек
             if (isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column))){
@@ -295,7 +293,7 @@ public class GUI implements Serializable {
 
             //изменение цвета ячееек
             if (column == 0){
-                setText(String.format("%d",row));
+                setText(String.valueOf(row));
             }
             if (isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column))){
                 render.setBackground(new Color(135, 206, 235));
