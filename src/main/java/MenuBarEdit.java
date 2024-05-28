@@ -99,6 +99,27 @@ public class MenuBarEdit {
         StringSelection stringSelection = new StringSelection(cutData.toString());
         clipboard.setContents(stringSelection, null);
     }
+    public void cutWithShift(JTable activeTable, int[] selectedCol, int[] selectedRow){
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringBuilder cutData = new StringBuilder();
+        TableModel model = activeTable.getModel();
+
+        int rowCount = activeTable.getRowCount();
+        int colCount = activeTable.getColumnCount();
+
+        //копируем данные
+        for(int row: selectedRow){
+            for (int col : selectedCol){
+                cutData.append(model.getValueAt(row, col)).append("\t");
+                model.setValueAt(null, row, col);
+            }
+            cutData.append("\n");
+        }
+
+        StringSelection stringSelection = new StringSelection(cutData.toString());
+        clipboard.setContents(stringSelection, null);
+
+    }
 
     public void copyToClipboard(int[] selectedCol, int[] selectedRow, JTable activeTable){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -474,6 +495,7 @@ public class MenuBarEdit {
                     cutToClipboard(selectedCol,selectedRow,activeTable);
                 } else{
                     System.out.println("Вырезание со сдвигом");
+                    cutWithShift(activeTable,selectedCol,selectedRow);
                 }
             }
         });
