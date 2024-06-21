@@ -86,31 +86,47 @@ public class MenuBarFile {
     }
 
     public void open(File selectedFile, DefaultTableModel hexModel){
-            try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile))){
+           try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile),32768)){
                 String line;
                 int indexRow = 0;
-                int indexCol = 1; // Начинаем с 1, чтобы пропустить первый столбец
 
-                while ((line = reader.readLine()) != null) {
-                    byte[] byteData = line.getBytes();
-                    int index = 0;
+                while ((line = reader.readLine()) != null){
+                    for (int i = 0; i < line.length(); i++) {
+                        String hexValue = String.format("%02X", (int)line.charAt(i));
 
-                    while (index < byteData.length) {
-                        if (indexCol >= hexModel.getColumnCount()) {
-                            indexCol = 1; // Сброс к первому столбцу
-                            indexRow++; // Перейти на следующую строку
+                        int indexCol = (i % (hexModel.getColumnCount() - 1)) + 1; // Столбец 1...N
+                        if (indexCol == 1 && i != 0) {
+                            indexRow++;
                         }
-
-                        if (indexRow >= hexModel.getRowCount()) {
-                            break; // Остановиться, если достигнут конец таблицы
-                        }
-
-                        String hex = Integer.toHexString(byteData[index] & 0xFF);
-                        hexModel.setValueAt(hex, indexRow, indexCol);
-                        index++;
-                        indexCol++;
+                        hexModel.setValueAt(hexValue,indexRow,indexCol);
                     }
                 }
+       /* try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile))){
+            String line;
+            int indexRow = 0;
+            int indexCol = 1; // Начинаем с 1, чтобы пропустить первый столбец
+
+            while ((line = reader.readLine()) != null) {
+                byte[] byteData = line.getBytes();
+                int index = 0;
+
+                while (index < byteData.length) {
+                    if (indexCol >= hexModel.getColumnCount()) {
+                        indexCol = 1; // Сброс к первому столбцу
+                        indexRow++; // Перейти на следующую строку
+                    }
+
+                    if (indexRow >= hexModel.getRowCount()) {
+                        break; // Остановиться, если достигнут конец таблицы
+                    }
+
+                    String hex = Integer.toHexString(byteData[index] & 0xFF);
+                    System.out.print(hex);
+                    hexModel.setValueAt(hex, indexRow, indexCol);
+                    index++;
+                    indexCol++;
+                }
+            }*/
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

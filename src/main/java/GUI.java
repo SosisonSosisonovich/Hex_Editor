@@ -18,9 +18,11 @@ import java.io.Serializable;
 public class GUI implements Serializable {
     private final JFrame frame;
     private JPanel panel;
+    private JPanel panel1;
     private static JTable hexTable;
     private static JTable charTable;
     static JTable activeTable;
+    private static JLabel label;
     private boolean updating  = false;
     private static int selectedRow = -1;
     private static int selectedCol = -1;
@@ -39,6 +41,7 @@ public class GUI implements Serializable {
 
     void run(){
         panel = new JPanel(new GridLayout());
+        panel1 = new JPanel(new BorderLayout());
 
         //запрет на изменение offset'а
         DefaultTableModel hexModel = new DefaultTableModel(colNames(),50) {
@@ -131,11 +134,18 @@ public class GUI implements Serializable {
         charSP.setBorder(border);
         hexSP.setBorder(border);
 
+        label = new JLabel();
+        panel1.add(label);
+
         panel.add(hexSP);
         panel.add(charSP);
         panel.setBorder(new EmptyBorder(0, 0, 20, 100));
 
-        frame.add(panel);
+        JPanel panelMain = new JPanel(new BorderLayout());
+        panelMain.add(panel, BorderLayout.CENTER);
+        panelMain.add(panel1, BorderLayout.PAGE_START);
+
+        frame.add(panelMain);
         frame.setJMenuBar(jMenuBar);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -175,12 +185,12 @@ public class GUI implements Serializable {
         //подумать об размерах ячеек и setBarder, после закоммитить
         hexTable.getColumnModel().getColumn(0).setMaxWidth(100);
         for (int i = 1; i <hexTable.getColumnCount(); i++) {
-            hexTable.getColumnModel().getColumn(i).setMaxWidth(25);
+            hexTable.getColumnModel().getColumn(i).setMaxWidth(35);
         }
         //подумать об размерах ячеек и setBorder, после закоммитить
         charTable.getColumnModel().getColumn(0).setMaxWidth(100);
         for (int i = 1; i <charTable.getColumnCount(); i++) {
-            charTable.getColumnModel().getColumn(i).setMaxWidth(25);
+            charTable.getColumnModel().getColumn(i).setMaxWidth(35);
         }
 
         hexTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
@@ -257,6 +267,7 @@ public class GUI implements Serializable {
                 sourceTable.changeSelection(row, col, false, false);
 
                 activeTable = sourceTable;
+                label.setText(DecimalView());
 
                 sourceTable.repaint();
                 targetTable.repaint();
@@ -439,4 +450,26 @@ public class GUI implements Serializable {
            }
        });
    }
+
+    private static String DecimalView(){
+        String value = "";
+        int row = hexTable.getSelectedRow();
+        int col = hexTable.getSelectedColumn();
+
+        int signedSymb = 0;
+        int unsignedSymb = 0;
+
+        String symb = (String) hexTable.getValueAt(row, col);
+        int maxValue = 127; // 127- это максимальное положительное число 8-битного числа, если речь идет о числах со знаком
+        if (symb != null){
+            unsignedSymb = Integer.parseInt(symb, 16);
+            signedSymb = unsignedSymb;
+            if (unsignedSymb > maxValue){
+                signedSymb = unsignedSymb-(1<<8);//берется 8,т.к. изначальное число может занимать максимум 8 бит
+            }
+        }
+
+        value ="Число со знаком: "+ signedSymb+ " Число без знака: " + unsignedSymb;
+        return value;
+    }
 }

@@ -12,11 +12,11 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 public class MenuBarEdit {
-    private JMenuBar jMenuBar;
-    private JTable hexTable;
-    private JTable charTable;
-    private DefaultTableModel hexModel;
-    private DefaultTableModel charModel;
+    private final JMenuBar jMenuBar;
+    private final JTable hexTable;
+    private final JTable charTable;
+    private final DefaultTableModel hexModel;
+    private final DefaultTableModel charModel;
 
     public MenuBarEdit(JMenuBar jMenuBar, DefaultTableModel hexModel, DefaultTableModel charModel, JTable hexTable, JTable charTable){
         this.jMenuBar = jMenuBar;
@@ -41,12 +41,9 @@ public class MenuBarEdit {
         cut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //int [] selectedCol = GUI.activeTable.getSelectedColumns();
-                //int [] selectedRow = GUI.activeTable.getSelectedRows();
                 JTable activeTable = GUI.activeTable;
 
                 cutDialog(activeTable);
-                //cutToClipboard(selectedCol, selectedRow, activeTable);
             }
         });
         copy.addActionListener(new ActionListener() {
@@ -99,6 +96,7 @@ public class MenuBarEdit {
         StringSelection stringSelection = new StringSelection(cutData.toString());
         clipboard.setContents(stringSelection, null);
     }
+
     public void cutWithShift(JTable activeTable, int[] selectedCol, int[] selectedRow){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringBuilder cutData = new StringBuilder();
@@ -118,6 +116,38 @@ public class MenuBarEdit {
 
         StringSelection stringSelection = new StringSelection(cutData.toString());
         clipboard.setContents(stringSelection, null);
+
+        // Удаление выбранных ячеек
+        for (int row : selectedRow) {
+            for (int col : selectedCol) {
+                model.setValueAt(null, row, col);
+            }
+        }
+
+        // Сдвиг данных влево и вверх
+        for (int row = 0; row < rowCount; row++) {
+            for (int col = 0; col < colCount; col++) {
+                if (model.getValueAt(row, col) == null) {
+                    int srcRow = row;
+                    int srcCol = col;
+
+                    // Найти следующую непустую ячейку
+                    do {
+                        srcCol++;
+                        if (srcCol >= colCount) {
+                            srcCol = 0;
+                            srcRow++;
+                        }
+                    } while (srcRow < rowCount && model.getValueAt(srcRow, srcCol) == null);
+
+                    if (srcRow < rowCount) {
+                        Object value = model.getValueAt(srcRow, srcCol);
+                        model.setValueAt(value, row, col);
+                        model.setValueAt(null, srcRow, srcCol);
+                    }
+                }
+            }
+        }
 
     }
 
@@ -262,7 +292,7 @@ public class MenuBarEdit {
             try {
                 String pasteData = (String) transferable.getTransferData(DataFlavor.stringFlavor);
                 // Разбиваем строку на символы
-                String[] characters = pasteData.split(" ");
+                String[] characters = pasteData.split("\\s");
                 int rowCount = model.getRowCount();
                 int colCount = model.getColumnCount();
 
@@ -272,13 +302,18 @@ public class MenuBarEdit {
 
                 //сдвиг данных вправо
                 for (int row = rowCount-1; row >= selectedRow; row--) {
-                    for (int col = colCount-1; col > 0 ; col--) {
+                    for (int col = colCount-1; col >= selectedCol + charLength ; col--) {
                         //если количества столбцов в строке не хватает, то переходим на предыдущую строку
                         int srcRow = (col - charLength < 1) ? row - 1 : row;
                         //если количества столбцов в строке не хватает, то переходим на последний столбец предыдущей строки плюс смещение
                         int srcCol = (col - charLength < 1) ? colCount - 1 + (col - charLength) : col - charLength;
 
-                        if (srcRow >= 0 && srcCol > 0) {
+                        if (srcCol < 0) {
+                            srcCol += colCount;
+                            srcRow--;
+                        }
+
+                        if (srcRow >= 0) {
                             Object value = model.getValueAt(srcRow, srcCol);
                             model.setValueAt(value, row, col);
                         }
@@ -351,19 +386,26 @@ public class MenuBarEdit {
 
                 //сдвиг данных вправо
                 for (int row = rowCount-1; row >= selectedRow; row--) {
-                    for (int col = colCount-1; col > 0 ; col--) {
+                    for (int col = colCount-1; col >= selectedCol + charLength ; col--) {
                         //если количества столбцов в строке не хватает, то переходим на предыдущую строку
                         int srcRow = (col - charLength < 1) ? row - 1 : row;
                         //если количества столбцов в строке не хватает, то переходим на последний столбец предыдущей строки плюс смещение
                         int srcCol = (col - charLength < 1) ? colCount - 1 + (col - charLength) : col - charLength;
 
-                        if (srcRow >= 0 && srcCol > 0) {
+                        if (srcCol < 0) {
+                            srcCol += colCount;
+                            srcRow--;
+                        }
+
+                        if (srcRow >= 0) {
                             Object value = model.getValueAt(srcRow, srcCol);
                             model.setValueAt(value, row, col);
                         }
                     }
                 }
 
+
+                //вводим новые переменные, чтобы избежать изменения старых
                 int row = selectedRow;
                 int col = selectedCol;
                 for (char character : characters) {
@@ -494,7 +536,6 @@ public class MenuBarEdit {
                 if(replace.isSelected()){
                     cutToClipboard(selectedCol,selectedRow,activeTable);
                 } else{
-                    System.out.println("Вырезание со сдвигом");
                     cutWithShift(activeTable,selectedCol,selectedRow);
                 }
             }
@@ -568,27 +609,6 @@ public class MenuBarEdit {
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
             table1.setRowSorter(sorter);
             table2.setRowSorter(sorter);
-
-            /*RowFilter<Object, Object> rowFilter = new RowFilter<Object, Object>() {
-                @Override
-                public boolean include(Entry<? extends Object, ? extends Object> entry) {
-                    for (String term : arr) {
-                        boolean termFound = false;
-
-                        for (int i = 0; i < entry.getValueCount(); i++) {
-                            Object value = entry.getValue(i);
-                            if (value != null && Pattern.compile(Pattern.quote(term), Pattern.CASE_INSENSITIVE).matcher(value.toString()).find()) {
-                                termFound = true;
-                                break;
-                            }
-                        }
-                        if (!termFound) {
-                            return false; // Если хотя бы один из элементов не найден, исключаем строку
-                        }
-                    }
-                    return true; // Все элементы найдены
-                }
-            };*/
 
         RowFilter<Object, Object> rowFilter = new RowFilter<Object, Object>() {
             @Override

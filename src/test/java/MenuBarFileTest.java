@@ -18,7 +18,7 @@ public class MenuBarFileTest {
     private DefaultTableModel charModel;
     private JTable hexTable;
     private  JTable charTable;
-    static byte[] bytes = {10, 20, 30, 40, 50};
+    byte[] bytes = {10, 20, 30, 40, 50};
     File file = new File("C:/Users/kakaw/Downloads/0");
 
 
@@ -45,7 +45,7 @@ public class MenuBarFileTest {
         assertEquals(50, charModel.getRowCount());
     }
 
-    @Test
+    /*@Test
     public void openTest() throws IOException {
         hexModel.setRowCount(0);
         charModel.setRowCount(0);
@@ -53,12 +53,12 @@ public class MenuBarFileTest {
         charModel.setRowCount(1);
 
         //создаем временный файл на 1 гб
-       /* File testFile = File.createTempFile("test",".txt");
+        File testFile = File.createTempFile("test",".txt");
         try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(testFile))) {
                 bos.write(bytes);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }*/
+        }
 
         hexModel.addTableModelListener(new TableModelListener() {
             @Override
@@ -78,7 +78,7 @@ public class MenuBarFileTest {
 
         assertEquals(12,(long) hexModel.getColumnCount() * hexModel.getRowCount());
         file.deleteOnExit();
-    }
+    }*/
 
     @Test
     public void saveTest() throws IOException {

@@ -156,9 +156,9 @@ public class MenuBarView {
         return decimalFrame;
     }
 
-    //чтение последовательностей из 2 байт
+    //окно с представлением значения последовательности байт
     private JFrame BytesView(DefaultTableModel hexModel, Object[][] newData ){
-        JFrame frame = new JFrame("Последовательности из 2 байт");
+        JFrame frame = new JFrame();
         JPanel panel = new JPanel(new GridLayout());
 
         int colCount = hexModel.getColumnCount();
