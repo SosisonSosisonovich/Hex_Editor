@@ -86,22 +86,7 @@ public class MenuBarFile {
     }
 
     public void open(File selectedFile, DefaultTableModel hexModel){
-           try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile),32768)){
-                String line;
-                int indexRow = 0;
-
-                while ((line = reader.readLine()) != null){
-                    for (int i = 0; i < line.length(); i++) {
-                        String hexValue = String.format("%02X", (int)line.charAt(i));
-
-                        int indexCol = (i % (hexModel.getColumnCount() - 1)) + 1; // Столбец 1...N
-                        if (indexCol == 1 && i != 0) {
-                            indexRow++;
-                        }
-                        hexModel.setValueAt(hexValue,indexRow,indexCol);
-                    }
-                }
-       /* try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile))){
+        try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile))){
             String line;
             int indexRow = 0;
             int indexCol = 1; // Начинаем с 1, чтобы пропустить первый столбец
@@ -121,15 +106,14 @@ public class MenuBarFile {
                     }
 
                     String hex = Integer.toHexString(byteData[index] & 0xFF);
-                    System.out.print(hex);
                     hexModel.setValueAt(hex, indexRow, indexCol);
                     index++;
                     indexCol++;
                 }
-            }*/
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
+        } catch (IOException e) {
+                throw new RuntimeException(e);
+        }
     }
 
     public void save(File file,  List<String[]> tableData){

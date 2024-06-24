@@ -45,39 +45,19 @@ public class MenuBarFileTest {
         assertEquals(50, charModel.getRowCount());
     }
 
-    /*@Test
-    public void openTest() throws IOException {
-        hexModel.setRowCount(0);
-        charModel.setRowCount(0);
-        hexModel.setRowCount(1);
-        charModel.setRowCount(1);
+   /* @Test
+    public void openTest(){
+        long fileSize = 1073741824L;
 
-        //создаем временный файл на 1 гб
-        File testFile = File.createTempFile("test",".txt");
-        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(testFile))) {
-                bos.write(bytes);
-        } catch (IOException e) {
+        try {
+            File testFile = File.createTempFile("test",".bin");
+
+
+
+            testFile.deleteOnExit();
+        }catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        hexModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                if (e.getType() == TableModelEvent.UPDATE) {
-                    int row = e.getLastRow();
-
-                    // Проверка, что редактируемая ячейка находится в последней строке
-                    if (row == hexModel.getRowCount() - 1) {
-                        hexModel.addRow(new Object[hexModel.getColumnCount()]);
-                    }
-                }
-            }
-        });
-
-        menuBarFile.open(file, hexModel);
-
-        assertEquals(12,(long) hexModel.getColumnCount() * hexModel.getRowCount());
-        file.deleteOnExit();
     }*/
 
     @Test

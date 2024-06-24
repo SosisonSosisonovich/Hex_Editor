@@ -23,18 +23,10 @@ public class MenuBarView {
         JMenu view = new JMenu("Вид");
         jMenuBar.add(view);
 
-        JMenuItem DecimalView = view.add(new JMenuItem("Десятичный вид"));
-        view.addSeparator();
         JMenuItem twoBytes = view.add(new JMenuItem("2 байта"));
         JMenuItem fourBytes = view.add(new JMenuItem("4 байта"));
         JMenuItem eightBytes = view.add(new JMenuItem("8 байта"));
 
-        DecimalView.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                decimalViewFrame(hexModel);
-            }
-        });
         twoBytes.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -100,62 +92,6 @@ public class MenuBarView {
             }
         });
     }
-
-    //десятичное представление байт
-    private JFrame decimalViewFrame(DefaultTableModel hexModel){
-        JFrame decimalFrame = new JFrame("Десятичный вид");
-
-        JPanel decimalPanel = new JPanel(new GridLayout());
-
-        //копирование данных из hexmodel
-        Vector<Vector> data = hexModel.getDataVector();
-        Vector<Vector> decimalData = new Vector<>();
-
-        Vector<String> columnNames = new Vector<>();//копирование имен столбцов
-        int columnCount = hexModel.getColumnCount();
-        for (int i = 1; i < columnCount; i++) {
-            columnNames.add(hexModel.getColumnName(i));
-        }
-
-        // преобразование данных из 16-ричного кода в 10-ричный
-        for (Vector row : data) {
-            Vector<String> newRow = new Vector<>();
-            for (int i = 1; i < row.size(); i++) {
-                String hexValue = (String) row.get(i);
-                if (hexValue == null) {
-                    newRow.add("0");
-                }else {
-                    int decimalValue = Integer.parseInt(hexValue, 16);
-                    newRow.add(String.valueOf(decimalValue));
-                }
-            }
-            decimalData.add(newRow);
-        }
-
-        DefaultTableModel decimalModel = new DefaultTableModel();
-        decimalModel.setDataVector(decimalData, columnNames);
-
-        JTable decimalTable = new JTable(decimalModel);
-        decimalTable.getTableHeader().setReorderingAllowed(false);
-
-        JScrollPane decimalSP = new JScrollPane(decimalTable,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        decimalPanel.add(decimalSP);
-
-        decimalTable.setFont(new Font("Courier New", Font.BOLD, 13));
-        decimalTable.setShowHorizontalLines(false);
-        decimalTable.setRowHeight(25);
-        decimalTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        decimalFrame.add(decimalPanel);
-        decimalFrame.setSize(800,450);
-        decimalFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        decimalFrame.setLocationRelativeTo(null);
-        decimalFrame.setAlwaysOnTop(true);
-        decimalFrame.setVisible(true);
-
-        return decimalFrame;
-    }
-
     //окно с представлением значения последовательности байт
     private JFrame BytesView(DefaultTableModel hexModel, Object[][] newData ){
         JFrame frame = new JFrame();
