@@ -15,7 +15,6 @@ public class MenuBarFile {
         JMenuItem news = file.add(new JMenuItem("Новый"));
         JMenuItem open = file.add(new JMenuItem("Открыть"));
         JMenuItem save = file.add(new JMenuItem("Сохранить"));
-        JMenuItem saveAs = file.add(new JMenuItem("Сохранить как..."));
 
         news.addActionListener(new ActionListener() {
             @Override
@@ -85,7 +84,7 @@ public class MenuBarFile {
         model.setRowCount(50);
     }
 
-    public void open(File selectedFile, DefaultTableModel hexModel){
+    /*public void open(File selectedFile, DefaultTableModel hexModel){
         try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile))){
             String line;
             int indexRow = 0;
@@ -113,6 +112,44 @@ public class MenuBarFile {
             }
         } catch (IOException e) {
                 throw new RuntimeException(e);
+        }
+    }*/
+
+    public void open(File selectedFile, DefaultTableModel hexModel){
+        try(RandomAccessFile randomAccessFile = new RandomAccessFile(selectedFile, "r")){
+            long fileLength = randomAccessFile.length();
+            byte[] buffer = new byte[2048];
+            long index = 0;
+            int indexRow = 0;
+            int indexCol = 1; // Начинаем с 1, чтобы пропустить первый столбец
+
+            while (index < fileLength){
+
+                int bytesRead = randomAccessFile.read(buffer);
+                if (bytesRead == -1) {
+                    break;
+                }
+
+                for (int i = 0; i < bytesRead; i++) {
+                    if (indexCol >= hexModel.getColumnCount()) {
+                        indexCol = 1; // Сброс к первому столбцу
+                        indexRow++; // Перейти на следующую строку
+                    }
+
+                    if (indexRow >= hexModel.getRowCount()) {
+                        break; // Остановиться, если достигнут конец таблицы
+                    }
+
+                    String hex = String.format("%02X", buffer[i]);
+                    hexModel.setValueAt(hex, indexRow, indexCol);
+
+                    index++;
+                    indexCol++;
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
