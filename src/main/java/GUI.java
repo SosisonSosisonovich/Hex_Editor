@@ -13,6 +13,7 @@ import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.io.Serializable;
 
 public class GUI implements Serializable {
@@ -267,7 +268,13 @@ public class GUI implements Serializable {
                 sourceTable.changeSelection(row, col, false, false);
 
                 activeTable = sourceTable;
-                label.setText(DecimalView());
+
+
+                try {
+                    label.setText(DecimalView());
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
 
                 sourceTable.repaint();
                 targetTable.repaint();
@@ -451,7 +458,8 @@ public class GUI implements Serializable {
        });
    }
 
-    private static String DecimalView(){
+    private static String DecimalView() throws IOException {
+
         String value = "";
         int row = hexTable.getSelectedRow();
         int col = hexTable.getSelectedColumn();
