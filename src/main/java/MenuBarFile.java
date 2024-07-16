@@ -34,7 +34,6 @@ public class MenuBarFile {
 
                 if(a != JFileChooser.CANCEL_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
-                    //open(selectedFile, hexModel);
                     new HexFileReader(selectedFile, hexModel).execute();
 
                 }else {
@@ -84,99 +83,6 @@ public class MenuBarFile {
         model.setRowCount(0);
         model.setRowCount(50);
     }
-
-    /*public void open(File selectedFile, DefaultTableModel hexModel){
-        try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile))){
-            String line;
-            int indexRow = 0;
-            int indexCol = 1; // Начинаем с 1, чтобы пропустить первый столбец
-
-            while ((line = reader.readLine()) != null) {
-                byte[] byteData = line.getBytes();
-                int index = 0;
-
-                while (index < byteData.length) {
-                    if (indexCol >= hexModel.getColumnCount()) {
-                        indexCol = 1; // Сброс к первому столбцу
-                        indexRow++; // Перейти на следующую строку
-                    }
-
-                    if (indexRow >= hexModel.getRowCount()) {
-                        break; // Остановиться, если достигнут конец таблицы
-                    }
-
-                    String hex = Integer.toHexString(byteData[index] & 0xFF);
-                    hexModel.setValueAt(hex, indexRow, indexCol);
-                    index++;
-                    indexCol++;
-                }
-            }
-        } catch (IOException e) {
-                throw new RuntimeException(e);
-        }
-    }*/
-
-    /*public void open(File selectedFile, DefaultTableModel hexModel){
-        try(RandomAccessFile randomAccessFile = new RandomAccessFile(selectedFile, "r")){
-            long fileLength = randomAccessFile.length();
-            byte[] buffer = new byte[4096];
-            long index = 0;
-            int indexRow = 0;
-            int indexCol = 1; // Начинаем с 1, чтобы пропустить первый столбец
-
-            while (index < fileLength){
-
-                int bytesRead = randomAccessFile.read(buffer);
-                if (bytesRead == -1) {
-                    break;
-                }
-
-                for (int i = 0; i < bytesRead; i++) {
-                    if (indexCol >= hexModel.getColumnCount()) {
-                        indexCol = 1; // Сброс к первому столбцу
-                        indexRow++; // Перейти на следующую строку
-                    }
-
-                    if (indexRow >= hexModel.getRowCount()) {
-                        break; // Остановиться, если достигнут конец таблицы
-                    }
-
-                    String hex = String.format("%02X", buffer[i]);
-                    hexModel.setValueAt(hex, indexRow, indexCol);
-
-                    index++;
-                    indexCol++;
-                }
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
-
-    /*public void open(File selectedFile, DefaultTableModel hexModel){
-
-        final int BUFFER_SIZE = 1024;
-
-        try(RandomAccessFile raf = new RandomAccessFile(selectedFile, "r")){
-
-            long fileLength = raf.length();
-            byte[] buff = new byte[BUFFER_SIZE];
-
-            for (int i = 0; i < fileLength; i+=BUFFER_SIZE) {
-                int bytesRead = raf.read(buff, 0, (int)Math.min(BUFFER_SIZE, fileLength - i));
-                for (int j = 0; j < bytesRead; j++) {
-                    int value = buff[j] & 0XFF;
-                    String hexValue = String.format("%02X",value);
-                    int offset = i + j;
-                }
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
-
     //внутренний класс для чтения файла, наследует StringWorker, чтобы чтение проходило на фоне
     public class HexFileReader extends SwingWorker<Void, Object[]>{
 
@@ -214,7 +120,7 @@ public class MenuBarFile {
         @Override
         protected void process(List<Object[]> chunks) {
             for (Object[] chunk : chunks) {
-                Number offsetNumber = (Number) chunk[0]; // Correctly handle as Number
+                Number offsetNumber = (Number) chunk[0];
                 long offset = offsetNumber.longValue();
                 String hexString = (String) chunk[1];
 
