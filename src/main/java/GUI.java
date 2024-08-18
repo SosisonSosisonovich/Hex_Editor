@@ -4,6 +4,7 @@ import javax.swing.JViewport;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -14,7 +15,9 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.util.Random;
 
 public class GUI implements Serializable {
     private final JFrame frame;
@@ -40,31 +43,30 @@ public class GUI implements Serializable {
         run();
     }
 
-    void run(){
+    void run() throws IOException {
         panel = new JPanel(new GridLayout());
         panel1 = new JPanel(new BorderLayout());
 
         //запрет на изменение offset'а
-        DefaultTableModel hexModel = new DefaultTableModel(colNames(),50) {
+      /* DefaultTableModel hexModel = new DefaultTableModel(colNames(),50) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column != 0;
+            }
+        };*/
+
+        DefaultTableModel charModel = new DefaultTableModel(50, 33){
             @Override
             public boolean isCellEditable(int row, int column) {
                 return column != 0;
             }
         };
 
-        DefaultTableModel charModel = new DefaultTableModel(50, 32){
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column != 0;
-            }
-        };
-
-        charModel.addTableModelListener(new TableModelListener() {
+       /* charModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
                 if (!updating) {
                     updating = true;
-
                     int row = e.getFirstRow();
                     int column = e.getColumn();
 
@@ -76,7 +78,6 @@ public class GUI implements Serializable {
                             if (!asciiChar.isEmpty()) {
                                 int Char = asciiChar.charAt(0);
                                 String hexValue = Integer.toHexString(Char);
-
                                 hexModel.setValueAt(hexValue, row, column);
                             }
                         }
@@ -85,6 +86,7 @@ public class GUI implements Serializable {
                 }
             }
         });
+
         hexModel.addTableModelListener(new TableModelListener() {
            @Override
            public void tableChanged(TableModelEvent e) {
@@ -109,7 +111,56 @@ public class GUI implements Serializable {
                    updating = false;
                }
            }
-       });
+       });*/
+
+        HexTableModel hexModel = new HexTableModel(null,50);
+        /*HexTableModel charModel = new HexTableModel(null,50,33){
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return columnIndex != 0;
+            }
+        };*/
+        charModel.addTableModelListener(e -> {
+            if (!updating) {
+                updating = true;
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+
+                if (row >= 0 && column >= 0) {
+                    Object asciiSimb = charModel.getValueAt(row, column);
+                    if (asciiSimb != null) {
+                        String asciiChar = asciiSimb.toString();
+                        if (!asciiChar.isEmpty()) {
+                            int Char = asciiChar.charAt(0);
+                            String hexValue = Integer.toHexString(Char).toUpperCase();
+                            hexModel.setValueAt(hexValue, row, column);
+                        }
+                    }
+                }
+                updating = false;
+            }
+        });
+
+        hexModel.addTableModelListener(e -> {
+            if (!updating) {
+                updating = true;
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+
+                if (row >= 0 && column >= 0) {
+                    Object hexSimb = hexModel.getValueAt(row, column);
+                    if (hexSimb != null) {
+                        String hexChar = hexSimb.toString();
+                        if (!hexChar.isEmpty()) {
+                            int Char = Integer.parseInt(hexChar, 16);
+                            char charValue = (char) Char;
+                            charModel.setValueAt(charValue, row, column);
+                        }
+                    }
+                }
+                updating = false;
+            }
+        });
 
         hexTable = new JTable(hexModel);
         charTable = new JTable(charModel);
@@ -150,12 +201,10 @@ public class GUI implements Serializable {
         frame.setJMenuBar(jMenuBar);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        frame.revalidate();
-        frame.repaint();
     }
 
     private static Object[] colNames() {
-        Object[] object = new Object[32];
+        Object[] object = new Object[33];
         object[0] = "offset";
         for (int i = 1; i < object.length; i++) {
             String hexName = Integer.toHexString(i - 1);
@@ -180,10 +229,6 @@ public class GUI implements Serializable {
         hexTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         charTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        hexTable.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        charTable.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
-        //подумать об размерах ячеек и setBarder, после закоммитить
         hexTable.getColumnModel().getColumn(0).setMaxWidth(100);
         for (int i = 1; i <hexTable.getColumnCount(); i++) {
             hexTable.getColumnModel().getColumn(i).setMaxWidth(35);
@@ -194,7 +239,7 @@ public class GUI implements Serializable {
             charTable.getColumnModel().getColumn(i).setMaxWidth(35);
         }
 
-        hexTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+        /*hexTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
             @Override
             public void columnAdded(TableColumnModelEvent e) {
                 hexTable.getColumnModel().getColumn(0).setMinWidth(70);
@@ -203,13 +248,10 @@ public class GUI implements Serializable {
 
             @Override
             public void columnRemoved(TableColumnModelEvent e) {}
-
             @Override
             public void columnMoved(TableColumnModelEvent e) {}
-
             @Override
             public void columnMarginChanged(ChangeEvent e) {}
-
             @Override
             public void columnSelectionChanged(ListSelectionEvent e) {}
         });
@@ -222,16 +264,13 @@ public class GUI implements Serializable {
 
             @Override
             public void columnRemoved(TableColumnModelEvent e) {}
-
             @Override
             public void columnMoved(TableColumnModelEvent e) {}
-
             @Override
             public void columnMarginChanged(ChangeEvent e) {}
-
             @Override
             public void columnSelectionChanged(ListSelectionEvent e) {}
-        });
+        });*/
 
         hexTable.getTableHeader().setPreferredSize(new Dimension(hexTable.getTableHeader().getPreferredSize().width,25));
         charTable.getTableHeader().setPreferredSize(new Dimension(hexTable.getTableHeader().getPreferredSize().width,25));
@@ -269,7 +308,6 @@ public class GUI implements Serializable {
 
                 activeTable = sourceTable;
 
-
                 try {
                     label.setText(DecimalView());
                 } catch (IOException ex) {
@@ -292,13 +330,15 @@ public class GUI implements Serializable {
             //offset
             if (column == 0){
                 setText(String.valueOf(row));
+            }else {
+                render.setBackground(isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column)) ? table.getSelectionBackground() : Color.WHITE);
             }
             //изменение цвета ячееек
-            if (isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column))){
+           /* if (isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column))){
                 render.setBackground(new Color(135, 206, 235));
             } else {
                 render.setBackground(table.getBackground());
-            }
+            }*/
         return render;
     }
     }
@@ -312,20 +352,20 @@ public class GUI implements Serializable {
             //изменение цвета ячееек
             if (column == 0){
                 setText(String.valueOf(row));
+            }else {
+                render.setBackground(isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column)) ? table.getSelectionBackground() : Color.WHITE);
             }
-            if (isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column))){
+            /*if (isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column))){
                 render.setBackground(new Color(135, 206, 235));
             } else {
                 render.setBackground(table.getBackground());
-            }
-
+            }*/
             return render;
         }
     }
 
     private static class ActiveCellEditorForHex extends AbstractCellEditor implements TableCellEditor{
         private final JTextField text;
-
         private final JTable table;
 
        public ActiveCellEditorForHex(JTable table){
@@ -417,7 +457,6 @@ public class GUI implements Serializable {
 
             return text;
         } else{
-
             text.setBackground(table.getBackground());
             return null;
         }
@@ -428,6 +467,7 @@ public class GUI implements Serializable {
         return text.getText();
     }
     }
+
 
     // Метод для проверки, видима ли ячейка в таблице
     private static boolean isCellVisible(JTable table, int row, int column) {
@@ -459,11 +499,13 @@ public class GUI implements Serializable {
    }
 
     private static String DecimalView() throws IOException {
-
         String value = "";
         int row = hexTable.getSelectedRow();
         int col = hexTable.getSelectedColumn();
 
+        if (row == -1 || col == -1) {
+            return "Ячейка не выбрана.";
+        }
         int signedSymb = 0;
         int unsignedSymb = 0;
 

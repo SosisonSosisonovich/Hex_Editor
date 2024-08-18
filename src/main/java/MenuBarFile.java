@@ -48,9 +48,12 @@ public class MenuBarFile {
                 int a = fileChooser.showSaveDialog(null);
                 List<String[]> tableData = new ArrayList<>();
 
-                for (int i = 0; i < hexModel.getRowCount(); i++) {
-                    String[] rowData = new String[hexModel.getColumnCount()];
-                    for (int j = 1; j < hexModel.getColumnCount(); j++) {
+                int colCount = hexModel.getColumnCount();
+                int rowCount = hexModel.getRowCount();
+
+                for (int i = 0; i < rowCount; i++) {
+                    String[] rowData = new String[colCount];
+                    for (int j = 1; j < colCount; j++) {
                         if (hexModel.getValueAt(i, j) != null) {
                             rowData[j] = hexModel.getValueAt(i, j).toString();
                         } else {
@@ -86,7 +89,7 @@ public class MenuBarFile {
     //внутренний класс для чтения файла, наследует StringWorker, чтобы чтение проходило на фоне
     public class HexFileReader extends SwingWorker<Void, Object[]>{
 
-        private static final int BUFFER_SIZE = 1024;
+        private static final int BUFFER_SIZE = 2048;
         private final File selectedFile;
         private final DefaultTableModel hexModel;
 
@@ -100,6 +103,7 @@ public class MenuBarFile {
             try(RandomAccessFile raf = new RandomAccessFile(selectedFile, "r")){
                 long fileLength = selectedFile.length();
                 byte[] buff = new byte[BUFFER_SIZE];
+                List<Object[]> chunk = new ArrayList<>();
 
                 for (int i = 0; i < fileLength; i+= BUFFER_SIZE) {
                     int bytesRead = raf.read(buff, 0, (int)Math.min(BUFFER_SIZE, fileLength - i));
@@ -107,8 +111,18 @@ public class MenuBarFile {
                         int value = buff[j] & 0xFF;
                         String hexValue = String.format("%02X",value);
                         int offset = i + j;
-                        publish(new Object[]{offset, hexValue});
+                        //publish(new Object[]{offset, hexValue});
+                        chunk.add(new Object[]{offset, hexValue});
+
+                        if (chunk.size()>=BUFFER_SIZE/16){
+                            publish(chunk.toArray(new Object[0][0]));
+                            chunk.clear();
+                        }
                     }
+                }
+
+                if(!chunk.isEmpty()){
+                    publish(chunk.toArray(new Object[0][0]));
                 }
 
             } catch (IOException e) {
@@ -124,14 +138,14 @@ public class MenuBarFile {
                 long offset = offsetNumber.longValue();
                 String hexString = (String) chunk[1];
 
-                int row = (int) (offset / hexModel.getColumnCount());
-                int col = (int) (offset % hexModel.getColumnCount()) + 1;
+                int colCount = hexModel.getColumnCount();
+                int row = (int) (offset / (colCount-1));
+                int col = (int) (offset % (colCount-1)) + 1;
 
-                if (col >= hexModel.getColumnCount()){
+                if (col >= colCount){
                     row++;
                     col = 1;
                 }
-
                 hexModel.setValueAt(hexString, row, col);
             }
         }
