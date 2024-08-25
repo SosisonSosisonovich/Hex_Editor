@@ -8,14 +8,36 @@ public class HexTableModel extends AbstractTableModel {
     private RandomAccessFile file;
     private final int bytesPerRow; // Количество байтов в одной строке
     private long fileLength;
+    private int initialRows = 50;
+    private Byte[][] data;
 
-    public HexTableModel(File file, int bytesPerRow) throws IOException {
-        this.file = new RandomAccessFile(file, "rw"); // Открываем файл для чтения и записи
-        this.fileLength = this.file.length();
+    public HexTableModel(int bytesPerRow) throws IOException {
+        //this.file = new RandomAccessFile(file, "rw"); // Открываем файл для чтения и записи
+        //this.file = null;
+        //this.fileLength = 0;
+        //this.bytesPerRow = bytesPerRow;
         this.bytesPerRow = bytesPerRow;
+        data = new Byte[initialRows][bytesPerRow];
     }
+
+    public void setFile(File file) throws IOException {
+        if (this.file != null) { //если файл открыт, то программа его закрывает
+            this.file.close();
+        }
+
+        this.file = new RandomAccessFile(file, "rw");
+        this.fileLength = this.file.length();
+
+        // Очистка данных для новой загрузки
+        data = null;
+        fireTableDataChanged(); // Обновить таблицу после загрузки файла
+    }
+
     @Override
     public int getRowCount() {
+        if (file == null) {
+            return data.length; // Возвращаем количество строк для пустой таблицы
+        }
         return (int) Math.ceil((double) fileLength / bytesPerRow) + 1;//для точного определения кол-вва строк, чтобы все влезло
     }
 
@@ -29,6 +51,13 @@ public class HexTableModel extends AbstractTableModel {
         if (columnIndex == 0) {
             return String.format("%08X", rowIndex * bytesPerRow);
         }
+
+        if (file == null) {
+            // Если файл не загружен, возвращаем данные из массива
+            Byte value = data[rowIndex][columnIndex - 1];
+            return value == null ? "" : String.format("%02X", value);
+        }
+
         int byteIndex = rowIndex * bytesPerRow + (columnIndex - 1);
         if (byteIndex < fileLength) {
             try {
@@ -46,11 +75,22 @@ public class HexTableModel extends AbstractTableModel {
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if (columnIndex > 0 && aValue != null) {
-            int byteIndex = rowIndex * bytesPerRow + (columnIndex - 1);
 
-            try {
-                byte newValue = (byte) Integer.parseInt(aValue.toString(), 16);
+        if (aValue == null || columnIndex == 0) {
+            return;
+        }
+        try {
+            byte newValue = (byte) Integer.parseInt(aValue.toString(), 16);
+
+            if(file == null){
+                if (rowIndex >= data.length) {
+                    Byte[][] newData = new Byte[rowIndex + 1][bytesPerRow];
+                    System.arraycopy(data, 0, newData, 0, data.length);
+                    data = newData;
+                }
+                data[rowIndex][columnIndex - 1] = newValue;
+            }else {
+                int byteIndex = rowIndex * bytesPerRow + (columnIndex - 1);
 
                 if (byteIndex >= fileLength) {
                     file.seek(fileLength);
@@ -64,16 +104,18 @@ public class HexTableModel extends AbstractTableModel {
                     file.seek(byteIndex);
                     file.write(newValue);
                 }
-
-                fireTableCellUpdated(rowIndex, columnIndex);
-
-                if (byteIndex == fileLength - 1) {
-                    fireTableRowsInserted(getRowCount(), getRowCount());
-                }
-            } catch (NumberFormatException | IOException e) {
-                e.printStackTrace();
             }
-        }
+
+            fireTableCellUpdated(rowIndex, columnIndex);
+
+            // добавляем строку, если редактируется последняя строка
+            if (rowIndex == getRowCount() - 1 && columnIndex == bytesPerRow) {
+                addEmptyRow();
+            }
+        } catch (NumberFormatException | IOException e) {
+            e.printStackTrace();
+           }
+
     }
 
     @Override
@@ -87,6 +129,21 @@ public class HexTableModel extends AbstractTableModel {
             return "Offset";
         } else {
             return String.format("%02X", column - 1);
+        }
+    }
+
+    private void addEmptyRow() {
+        if (file == null) {
+            Byte[][] newData = new Byte[data.length + 1][bytesPerRow];
+            System.arraycopy(data, 0, newData, 0, data.length);
+            data = newData;
+            fireTableRowsInserted(data.length - 1, data.length - 1);
+        }
+    }
+
+    public void saveChanges() throws IOException {
+        if (file != null) {
+            file.getChannel().force(true); // Обеспечить запись всех изменений в файл
         }
     }
 }

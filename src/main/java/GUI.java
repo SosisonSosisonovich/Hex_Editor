@@ -34,7 +34,7 @@ public class GUI implements Serializable {
     private  static  int editingCol = -1;
     private static boolean isEdited = false;
 
-    public GUI() {
+    public GUI() throws IOException {
         frame = new JFrame("Hex-Editor");
         //frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -113,7 +113,7 @@ public class GUI implements Serializable {
            }
        });*/
 
-        HexTableModel hexModel = new HexTableModel(null,50);
+        HexTableModel hexModel = new HexTableModel(32);
         /*HexTableModel charModel = new HexTableModel(null,50,33){
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -169,8 +169,8 @@ public class GUI implements Serializable {
         activeTable = hexTable;
 
         JMenuBar jMenuBar = new JMenuBar();
-        new MenuBarFile(jMenuBar,hexModel, charModel);
-        new MenuBarEdit(jMenuBar,hexModel,charModel,hexTable,charTable);
+        //new MenuBarFile(jMenuBar,hexModel, charModel);
+       // new MenuBarEdit(jMenuBar,hexModel,charModel,hexTable,charTable);
         new MenuBarView(jMenuBar,hexModel,charModel,hexTable,charTable);
 
         hexTable.getTableHeader().setReorderingAllowed(false);
@@ -390,7 +390,7 @@ public class GUI implements Serializable {
                 }
             });
 
-           addNewRow(table);
+           //addNewRow(table);
        }
 
         @Override
@@ -441,7 +441,7 @@ public class GUI implements Serializable {
                     }
                 }
             });
-            addNewRow(table);
+           // addNewRow(table);
         }
 
 
@@ -481,7 +481,7 @@ public class GUI implements Serializable {
    }
 
     // Новая строка, если редактируется последняя строка таблицы
-    private static void addNewRow(JTable table){
+    /*private static void addNewRow(JTable table){
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.addTableModelListener(new TableModelListener() {
            @Override
@@ -496,7 +496,7 @@ public class GUI implements Serializable {
                }
            }
        });
-   }
+   }*/
 
     private static String DecimalView() throws IOException {
         String value = "";
@@ -511,7 +511,7 @@ public class GUI implements Serializable {
 
         String symb = (String) hexTable.getValueAt(row, col);
         int maxValue = 127; // 127- это максимальное положительное число 8-битного числа, если речь идет о числах со знаком
-        if (symb != null){
+        if (symb != null && !symb.isEmpty()){
             unsignedSymb = Integer.parseInt(symb, 16);
             signedSymb = unsignedSymb;
             if (unsignedSymb > maxValue){
