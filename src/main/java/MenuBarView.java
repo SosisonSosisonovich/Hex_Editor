@@ -36,7 +36,7 @@ public class MenuBarView {
 
                 for (int row = 0; row < rowCount; row++) {
                     for (int col = 1; col < colCount; col += 2) {
-                        String byte1 = ((hexModel.getValueAt(row, col) != null) && (hexModel.getValueAt(row, col) != ""))? (String) hexModel.getValueAt(row, col) : "00";
+                        String byte1 = ((hexModel.getValueAt(row, col) != null) && (hexModel.getValueAt(row, col).toString().isEmpty())) ? (String) hexModel.getValueAt(row, col) : "00";
                         String byte2 = (col + 1 < colCount && hexModel.getValueAt(row, col + 1) != null && (hexModel.getValueAt(row, col) != "")) ? (String) hexModel.getValueAt(row, col + 1) : "00"; // Учет нечетного числа столбцов
 
                         newData[row][col / 2] = Integer.parseInt(byte1+byte2,16);
@@ -54,7 +54,7 @@ public class MenuBarView {
 
                 for (int row = 0; row < rowCount; row++) {
                     for (int col = 1; col < colCount; col += 4) {
-                        String byte1 = ((hexModel.getValueAt(row, col) != null) && (hexModel.getValueAt(row, col) != ""))? (String) hexModel.getValueAt(row, col) : "00";
+                        String byte1 = ((hexModel.getValueAt(row, col) != null) && (hexModel.getValueAt(row, col).toString().isEmpty())) ? (String) hexModel.getValueAt(row, col) : "00";
                         String byte2 = (col + 1 < colCount && hexModel.getValueAt(row, col + 1) != null && (hexModel.getValueAt(row, col) != "")) ? (String) hexModel.getValueAt(row, col + 1) : "00"; // Учет нечетного числа столбцов
                         String byte3 = (col + 2 < colCount && hexModel.getValueAt(row, col + 2) != null && (hexModel.getValueAt(row, col) != "")) ? (String) hexModel.getValueAt(row, col + 1) : "00";
                         String byte4 = (col + 3 < colCount && hexModel.getValueAt(row, col + 3) != null && (hexModel.getValueAt(row, col) != "")) ? (String) hexModel.getValueAt(row, col + 1) : "00";
@@ -74,7 +74,7 @@ public class MenuBarView {
 
                 for (int row = 0; row < rowCount; row++) {
                     for (int col = 1; col < colCount; col += 8) {
-                        String byte1 = ((hexModel.getValueAt(row, col) != null) && (hexModel.getValueAt(row, col) != ""))? (String) hexModel.getValueAt(row, col) : "00";
+                        String byte1 = ((hexModel.getValueAt(row, col) != null) && (hexModel.getValueAt(row, col).toString().isEmpty())) ? (String) hexModel.getValueAt(row, col) : "00";
                         String byte2 = (col + 1 < colCount && hexModel.getValueAt(row, col + 1) != null && (hexModel.getValueAt(row, col) != "")) ? (String) hexModel.getValueAt(row, col + 1) : "00"; // Учет нечетного числа столбцов
                         String byte3 = (col + 2 < colCount && hexModel.getValueAt(row, col + 2) != null && (hexModel.getValueAt(row, col) != "")) ? (String) hexModel.getValueAt(row, col + 1) : "00";
                         String byte4 = (col + 3 < colCount && hexModel.getValueAt(row, col + 3) != null && (hexModel.getValueAt(row, col) != "")) ? (String) hexModel.getValueAt(row, col + 1) : "00";
