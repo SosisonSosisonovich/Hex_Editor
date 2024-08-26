@@ -12,10 +12,6 @@ public class HexTableModel extends AbstractTableModel {
     private Byte[][] data;
 
     public HexTableModel(int bytesPerRow) throws IOException {
-        //this.file = new RandomAccessFile(file, "rw"); // Открываем файл для чтения и записи
-        //this.file = null;
-        //this.fileLength = 0;
-        //this.bytesPerRow = bytesPerRow;
         this.bytesPerRow = bytesPerRow;
         data = new Byte[initialRows][bytesPerRow];
     }
@@ -41,9 +37,37 @@ public class HexTableModel extends AbstractTableModel {
         return (int) Math.ceil((double) fileLength / bytesPerRow) + 1;//для точного определения кол-вва строк, чтобы все влезло
     }
 
+    public void setRowCount(int rowCount){
+        data = new Byte[rowCount][bytesPerRow];
+        fireTableDataChanged();
+    }
+
+    public void clearTable(){
+        data = new Byte[0][];
+
+        //если открыт какой-то файл, то закрываем его
+        if(file != null){
+            try{
+                file.close();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+            file = null;
+        }
+        fileLength = 0;
+
+        fireTableDataChanged();
+        setRowCount(50);
+    }
+
     @Override
     public int getColumnCount() {
         return bytesPerRow + 1; // Дополнительный столбец для offset
+    }
+
+    public void addColumn(HexTableModel model){
+        data = new Byte[model.getRowCount()][bytesPerRow+1];
+        fireTableDataChanged();
     }
 
     @Override

@@ -9,16 +9,12 @@ import java.util.Vector;
 public class MenuBarView {
     private JMenuBar jMenuBar;
     private JTable hexTable;
-    private JTable charTable;
     private HexTableModel hexModel;
-    private DefaultTableModel charModel;
 
-    public MenuBarView(JMenuBar jMenuBar, HexTableModel hexModel, DefaultTableModel charModel, JTable hexTable, JTable charTable){
+    public MenuBarView(JMenuBar jMenuBar, HexTableModel hexModel,  JTable hexTable){
         this.jMenuBar = jMenuBar;
         this.hexTable = hexTable;
-        this.charTable = charTable;
         this.hexModel = hexModel;
-        this.charModel = charModel;
 
         JMenu view = new JMenu("Вид");
         jMenuBar.add(view);

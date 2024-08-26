@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MenuBarFile {
-    public MenuBarFile(JMenuBar jMenuBar, DefaultTableModel hexModel, DefaultTableModel charModel){
+    public MenuBarFile(JMenuBar jMenuBar, HexTableModel hexModel){
 
         JMenu file = new JMenu("Файл");
         jMenuBar.add(file);
@@ -19,22 +19,29 @@ public class MenuBarFile {
         news.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //news(charModel, hexModel);
                 news(hexModel);
-                news(charModel);
+
             }
         });
         open.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //news(charModel, hexModel);
                 news(hexModel);
-                news(charModel);
 
                 JFileChooser fileChooser = new JFileChooser();
                 int a = fileChooser.showOpenDialog(null);
 
                 if(a != JFileChooser.CANCEL_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
-                    new HexFileReader(selectedFile, hexModel).execute();
+                    //new HexFileReader(selectedFile, hexModel).execute();
+                    try {
+                        hexModel.setFile(selectedFile);
+                        //GUI.updateCharTable(hexModel, charModel);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
 
                 }else {
                     System.out.println("Отмена действия.");
@@ -65,14 +72,17 @@ public class MenuBarFile {
 
                 if (a != JFileChooser.CANCEL_OPTION){
                     File selectedDirectory = fileChooser.getSelectedFile();
-                    System.out.println(selectedDirectory);
 
                     if (!selectedDirectory.exists()) {
                         File file = new File(String.valueOf(selectedDirectory) + ".bin");
                         save(file, tableData);
                     }
                     else { //если файл есть
-                        save(selectedDirectory, tableData);
+                        try {
+                            hexModel.saveChanges();
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 } else{
                     System.out.println("Отмена действия.");
@@ -82,18 +92,19 @@ public class MenuBarFile {
     }
 
     //обновление таблицы
-    public void news(DefaultTableModel model){
-        model.setRowCount(0);
-        model.setRowCount(50);
+    public void news(HexTableModel hexModel){
+        hexModel.clearTable();
+        //charModel.setRowCount(0);
+        //charModel.setRowCount(50);
     }
     //внутренний класс для чтения файла, наследует StringWorker, чтобы чтение проходило на фоне
-    public class HexFileReader extends SwingWorker<Void, Object[]>{
+    /*public class HexFileReader extends SwingWorker<Void, Object[]>{
 
         private static final int BUFFER_SIZE = 2048;
         private final File selectedFile;
-        private final DefaultTableModel hexModel;
+        private final HexTableModel hexModel;
 
-        public HexFileReader(File selectedFile, DefaultTableModel hexModel) {
+        public HexFileReader(File selectedFile, HexTableModel hexModel) {
             this.selectedFile = selectedFile;
             this.hexModel = hexModel;
         }
@@ -149,7 +160,7 @@ public class MenuBarFile {
                 hexModel.setValueAt(hexString, row, col);
             }
         }
-    }
+    }*/
 
     public void save(File file,  List<String[]> tableData){
         try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {

@@ -14,19 +14,21 @@ import java.util.regex.Pattern;
 public class MenuBarEdit {
     private final JMenuBar jMenuBar;
     private final JTable hexTable;
-    private final JTable charTable;
-    private final DefaultTableModel hexModel;
-    private final DefaultTableModel charModel;
+    //private final JTable charTable;
+    private final HexTableModel hexModel;
+    //private final DefaultTableModel charModel;
 
-    public MenuBarEdit(JMenuBar jMenuBar, DefaultTableModel hexModel, DefaultTableModel charModel, JTable hexTable, JTable charTable){
+    public MenuBarEdit(JMenuBar jMenuBar, HexTableModel hexModel, JTable hexTable){
         this.jMenuBar = jMenuBar;
         this.hexTable = hexTable;
-        this.charTable = charTable;
+        //this.charTable = charTable;
         this.hexModel = hexModel;
-        this.charModel = charModel;
+       // this.charModel = charModel;
 
-        hexTable.addMouseListener(new GUI.mouseListener(hexTable,charTable));
-        charTable.addMouseListener(new GUI.mouseListener(charTable,hexTable));
+        //hexTable.addMouseListener(new GUI.mouseListener(hexTable,charTable));
+        //charTable.addMouseListener(new GUI.mouseListener(charTable,hexTable));
+
+        hexTable.addMouseListener(new GUI.mouseListener(hexTable));
 
         JMenu edit = new JMenu("Редактирование");
         jMenuBar.add(edit);
@@ -74,7 +76,7 @@ public class MenuBarEdit {
             @Override
             public void actionPerformed(ActionEvent e) {
                 hexModel.addColumn(Integer.toHexString(hexModel.getColumnCount()+1));
-                charModel.addColumn(charModel.getColumnCount()+1);
+                //charModel.addColumn(charModel.getColumnCount()+1);
             }
         });
     }

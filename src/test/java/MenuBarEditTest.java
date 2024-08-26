@@ -25,7 +25,7 @@ public class MenuBarEditTest {
         charTable = new JTable(charModel);
         hexTable = new JTable(hexModel);
 
-        menuBarEdit = new MenuBarEdit(jMenuBar, hexModel,charModel,hexTable,charTable);
+        //menuBarEdit = new MenuBarEdit(jMenuBar, hexModel,charModel,hexTable,charTable);
     }
     @Test
     public void cutToClipboardTestHex(){

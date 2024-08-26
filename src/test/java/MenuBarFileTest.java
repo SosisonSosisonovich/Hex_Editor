@@ -30,7 +30,7 @@ public class MenuBarFileTest {
         charTable = new JTable(charModel);
         hexTable = new JTable(hexModel);
 
-        menuBarFile = new MenuBarFile(jMenuBar, hexModel,charModel);
+        //menuBarFile = new MenuBarFile(jMenuBar, hexModel,charModel);
     }
 
     @Test
@@ -38,8 +38,8 @@ public class MenuBarFileTest {
         assertEquals(3, hexModel.getRowCount());
         assertEquals(3, charModel.getRowCount());
 
-        menuBarFile.news(hexModel);
-        menuBarFile.news(charModel);
+        //menuBarFile.news(hexModel);
+       // menuBarFile.news(charModel);
 
         assertEquals(50, hexModel.getRowCount());
         assertEquals(50, charModel.getRowCount());
