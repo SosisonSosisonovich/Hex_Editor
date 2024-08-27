@@ -16,9 +16,9 @@ public class MenuBarEdit {
     private final JTable hexTable;
     private final JTable charTable;
     private final HexTableModel hexModel;
-    private final DefaultTableModel charModel;
+    private final CharTableModel charModel;
 
-    public MenuBarEdit(JMenuBar jMenuBar, HexTableModel hexModel, DefaultTableModel charModel, JTable hexTable, JTable charTable){
+    public MenuBarEdit(JMenuBar jMenuBar, HexTableModel hexModel, CharTableModel charModel, JTable hexTable, JTable charTable){
         this.jMenuBar = jMenuBar;
         this.hexTable = hexTable;
         this.charTable = charTable;
@@ -75,11 +75,15 @@ public class MenuBarEdit {
         addCol.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                hexModel.addColumn(hexTable);
+                hexModel.addColumn();
                 for (int i = 1; i < hexTable.getColumnCount(); i++) {
                     hexTable.getColumnModel().getColumn(i).setMaxWidth(35);
                 }
                 //charModel.addColumn(charModel.getColumnCount()+1);
+                charModel.addColumn();
+                for (int i = 1; i < charTable.getColumnCount(); i++) {
+                    charTable.getColumnModel().getColumn(i).setMaxWidth(35);
+                }
             }
         });
     }
@@ -575,7 +579,7 @@ public class MenuBarEdit {
                 String text = textField.getText().toLowerCase();
                 String[] arr = text.split("");
 
-                //find(charTable, hexTable, charModel, arr);
+                //(charTable, hexTable, charModel, arr);
             }
         });
 
@@ -594,7 +598,7 @@ public class MenuBarEdit {
             @Override
             public void windowClosing(WindowEvent e) {
                 hexTable.setRowSorter(null);
-                //charTable.setRowSorter(null);
+                charTable.setRowSorter(null);
             }
         });
 

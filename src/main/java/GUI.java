@@ -47,14 +47,8 @@ public class GUI implements Serializable {
         panel = new JPanel(new GridLayout());
         panel1 = new JPanel(new BorderLayout());
 
-        DefaultTableModel charModel = new DefaultTableModel(50, 33){
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column != 0;
-            }
-        };
-
         HexTableModel hexModel = new HexTableModel(32);
+        CharTableModel charModel = new CharTableModel(32);
 
         hexTable = new JTable(hexModel);
         charTable = new JTable(charModel);
@@ -322,7 +316,6 @@ public class GUI implements Serializable {
                     }
                 }
             });
-           addNewRow(table);
         }
 
 
@@ -359,55 +352,6 @@ public class GUI implements Serializable {
         }
         return false;
    }
-
-    // Новая строка, если редактируется последняя строка таблицы
-    private static void addNewRow(JTable table){
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.addTableModelListener(new TableModelListener() {
-           @Override
-           public void tableChanged(TableModelEvent e) {
-               if (e.getType() == TableModelEvent.UPDATE) {
-                   int row = e.getLastRow();
-
-                   // Проверка, что редактируемая ячейка находится в последней строке
-                   if (row == model.getRowCount() - 1) {
-                       model.addRow(new Object[model.getColumnCount()]);
-                   }
-               }
-           }
-       });
-   }
-
-    static void updateCharTable(HexTableModel hexTableModel, DefaultTableModel charModel){
-        int rowCount = hexTableModel.getRowCount();
-        int colCount = hexTableModel.getColumnCount();
-
-        Vector<Vector<String>> charData = new Vector<>(rowCount);
-        for (int row = 0; row < rowCount; row++) {
-            Vector<String> charRowData = new Vector<>(colCount);
-            for (int col = 1; col < colCount; col++) {
-                Object hexValue = hexTableModel.getValueAt(row,col);
-
-                if(hexValue != null){
-                    String hexString = hexValue.toString();
-                    int value = Integer.parseInt(hexString, 16);
-                    char asciiChar = (char)value;
-                    charRowData.add(Character.toString(asciiChar));
-                } else {
-                    charRowData.add("");
-                }
-            }
-            charData.add(charRowData);
-        }
-        //заголовки
-        Vector<String> colNames = new Vector<>();
-        for (int i = 0; i < colCount; i++) {
-            colNames.add(String.valueOf(i));
-        }
-
-        charModel.setDataVector(charData,colNames);
-
-    }
 
     private static String DecimalView() throws IOException {
         String value = "";

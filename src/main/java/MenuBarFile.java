@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MenuBarFile {
-    public MenuBarFile(JMenuBar jMenuBar, HexTableModel hexModel, DefaultTableModel charModel){
+    public MenuBarFile(JMenuBar jMenuBar, HexTableModel hexModel, CharTableModel charModel){
 
         JMenu file = new JMenu("Файл");
         jMenuBar.add(file);
@@ -35,12 +35,14 @@ public class MenuBarFile {
                     File selectedFile = fileChooser.getSelectedFile();
                     try {
                         hexModel.setFile(selectedFile);
+                        charModel.setFile(selectedFile);
+
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
 
                 }else {
-                    System.out.println("Отмена действия.");
+                    return;
                 }
             }
         });
@@ -88,10 +90,11 @@ public class MenuBarFile {
     }
 
     //обновление таблицы
-    public void news(HexTableModel hexModel, DefaultTableModel charModel){
+    public void news(HexTableModel hexModel, CharTableModel charModel){
         hexModel.clearTable();
-        charModel.setRowCount(0);
-        charModel.setRowCount(50);
+        charModel.clearTable();
+        //charModel.setRowCount(0);
+        //charModel.setRowCount(50);
     }
 
     public void save(File file,  List<String[]> tableData){

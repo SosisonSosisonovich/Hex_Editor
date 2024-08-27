@@ -4,14 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class HexTableModel extends AbstractTableModel {
+public class CharTableModel extends AbstractTableModel {
     private RandomAccessFile file;
     private int bytesPerRow; // Количество байтов в одной строке
     private long fileLength;
     private int initialRows = 50;
     private Byte[][] data;
 
-    public HexTableModel(int bytesPerRow) {
+
+    public CharTableModel(int bytesPerRow) {
         this.bytesPerRow = bytesPerRow;
         data = new Byte[initialRows][bytesPerRow];
     }
@@ -90,7 +91,7 @@ public class HexTableModel extends AbstractTableModel {
         if (file == null) {
             // Если файл не загружен, возвращаем данные из массива
             Byte value = data[rowIndex][columnIndex - 1];
-            return value == null ? "" : String.format("%02X", value);
+            return value == null ? "" : Character.toString((char) value.byteValue());
         }
 
         int byteIndex = rowIndex * bytesPerRow + (columnIndex - 1);
@@ -99,7 +100,7 @@ public class HexTableModel extends AbstractTableModel {
                 file.seek(byteIndex);
                 int value = file.read();
 
-                return String.format("%02X", value);
+                return Character.toString((char) value);
             } catch (IOException e) {
                 e.printStackTrace();
 
@@ -117,8 +118,9 @@ public class HexTableModel extends AbstractTableModel {
         }
 
         try {
-            byte newValue = (byte) Integer.parseInt(aValue.toString(), 16);
-
+            //byte newValue = (byte) Integer.parseInt(aValue.toString(), 16);
+            char charValue = aValue.toString().charAt(0);
+            byte newValue = (byte) charValue;
             if(file == null){
                 if (rowIndex >= data.length) {
                     Byte[][] newData = new Byte[rowIndex + 1][bytesPerRow];
@@ -155,7 +157,7 @@ public class HexTableModel extends AbstractTableModel {
 
         } catch (NumberFormatException | IOException e) {
             e.printStackTrace();
-           }
+        }
 
     }
 
@@ -179,12 +181,7 @@ public class HexTableModel extends AbstractTableModel {
             System.arraycopy(data, 0, newData, 0, data.length);
             data = newData;
             fireTableRowsInserted(data.length - 1, data.length - 1);
-        }
-    }
 
-    public void saveChanges() throws IOException {
-        if (file != null) {
-            file.getChannel().force(true); // Обеспечить запись всех изменений в файл
         }
     }
 }
