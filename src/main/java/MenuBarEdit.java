@@ -14,21 +14,21 @@ import java.util.regex.Pattern;
 public class MenuBarEdit {
     private final JMenuBar jMenuBar;
     private final JTable hexTable;
-    //private final JTable charTable;
+    private final JTable charTable;
     private final HexTableModel hexModel;
-    //private final DefaultTableModel charModel;
+    private final DefaultTableModel charModel;
 
-    public MenuBarEdit(JMenuBar jMenuBar, HexTableModel hexModel, JTable hexTable){
+    public MenuBarEdit(JMenuBar jMenuBar, HexTableModel hexModel, DefaultTableModel charModel, JTable hexTable, JTable charTable){
         this.jMenuBar = jMenuBar;
         this.hexTable = hexTable;
-        //this.charTable = charTable;
+        this.charTable = charTable;
         this.hexModel = hexModel;
-       // this.charModel = charModel;
+        this.charModel = charModel;
 
-        //hexTable.addMouseListener(new GUI.mouseListener(hexTable,charTable));
+        hexTable.addMouseListener(new GUI.mouseListener(hexTable,charTable));
         //charTable.addMouseListener(new GUI.mouseListener(charTable,hexTable));
 
-        hexTable.addMouseListener(new GUI.mouseListener(hexTable));
+        hexTable.addMouseListener(new GUI.mouseListener(hexTable, charTable));
 
         JMenu edit = new JMenu("Редактирование");
         jMenuBar.add(edit);
@@ -75,7 +75,10 @@ public class MenuBarEdit {
         addCol.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                hexModel.addColumn(Integer.toHexString(hexModel.getColumnCount()+1));
+                hexModel.addColumn(hexTable);
+                for (int i = 1; i < hexTable.getColumnCount(); i++) {
+                    hexTable.getColumnModel().getColumn(i).setMaxWidth(35);
+                }
                 //charModel.addColumn(charModel.getColumnCount()+1);
             }
         });
@@ -572,7 +575,7 @@ public class MenuBarEdit {
                 String text = textField.getText().toLowerCase();
                 String[] arr = text.split("");
 
-                find(charTable, hexTable, charModel, arr);
+                //find(charTable, hexTable, charModel, arr);
             }
         });
 
@@ -583,7 +586,7 @@ public class MenuBarEdit {
                 String resultText = text.replaceAll("0x", "");//удаляем маску, если она есть
                 String[] arr = resultText.split(" ");
 
-                find(hexTable, charTable, hexModel, arr);
+                //find(hexTable, charTable, hexModel, arr);
             }
         });
 
@@ -591,7 +594,7 @@ public class MenuBarEdit {
             @Override
             public void windowClosing(WindowEvent e) {
                 hexTable.setRowSorter(null);
-                charTable.setRowSorter(null);
+                //charTable.setRowSorter(null);
             }
         });
 

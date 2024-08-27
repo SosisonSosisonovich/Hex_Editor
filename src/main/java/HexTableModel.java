@@ -1,12 +1,12 @@
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class HexTableModel extends AbstractTableModel {
     private RandomAccessFile file;
-    private final int bytesPerRow; // Количество байтов в одной строке
+    private int bytesPerRow; // Количество байтов в одной строке
     private long fileLength;
     private int initialRows = 50;
     private Byte[][] data;
@@ -65,9 +65,22 @@ public class HexTableModel extends AbstractTableModel {
         return bytesPerRow + 1; // Дополнительный столбец для offset
     }
 
-    public void addColumn(HexTableModel model){
-        data = new Byte[model.getRowCount()][bytesPerRow+1];
-        fireTableDataChanged();
+    public void addColumn(JTable table) {
+        bytesPerRow++;
+
+        Byte[][] newData = new Byte[data.length][bytesPerRow];
+
+        // Копируем существующие данные в новый массив
+        for (int row = 0; row < data.length; row++) {
+            System.arraycopy(data[row], 0, newData[row], 0, data[row].length);
+        }
+
+        // Обновляем data на новый массив
+        data = newData;
+
+        // Уведомляем таблицу об изменении структуры
+        fireTableStructureChanged();
+
     }
 
     @Override

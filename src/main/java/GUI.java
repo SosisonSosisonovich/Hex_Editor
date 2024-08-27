@@ -25,7 +25,7 @@ public class GUI implements Serializable {
     private JPanel panel;
     private JPanel panel1;
     private static JTable hexTable;
-    //private static JTable charTable;
+    private static JTable charTable;
     static JTable activeTable;
     private static JLabel label;
     private boolean updating  = false;
@@ -37,7 +37,6 @@ public class GUI implements Serializable {
 
     public GUI() throws IOException {
         frame = new JFrame("Hex-Editor");
-        //frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1000, 600);
 
@@ -58,32 +57,31 @@ public class GUI implements Serializable {
         HexTableModel hexModel = new HexTableModel(32);
 
         hexTable = new JTable(hexModel);
-        //charTable = new JTable(charModel);
+        charTable = new JTable(charModel);
 
         //флаг для определения активной на данной момент, дефолтная активная таблица hexTable
         activeTable = hexTable;
 
         JMenuBar jMenuBar = new JMenuBar();
-        //new MenuBarFile(jMenuBar,hexModel, charModel);
-        new MenuBarFile(jMenuBar,hexModel);
-        // new MenuBarEdit(jMenuBar,hexModel,charModel,hexTable,charTable);
-        new MenuBarEdit(jMenuBar,hexModel,hexTable);
+        new MenuBarFile(jMenuBar, hexModel, charModel);
+        //new MenuBarFile(jMenuBar,hexModel);
+        new MenuBarEdit(jMenuBar,hexModel,charModel,hexTable,charTable);
         new MenuBarView(jMenuBar,hexModel,hexTable);
 
         hexTable.getTableHeader().setReorderingAllowed(false);
-        //charTable.getTableHeader().setReorderingAllowed(false);
+        charTable.getTableHeader().setReorderingAllowed(false);
         ColumnsAndRows();
 
         JScrollPane hexSP = new JScrollPane(hexTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        /*JScrollBar sharedScrollBar = hexSP.getVerticalScrollBar();
+        JScrollBar sharedScrollBar = hexSP.getVerticalScrollBar();
         JScrollPane charSP = new JScrollPane(charTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         charSP.setVerticalScrollBar(sharedScrollBar);
-        charSP.setBorder(new EmptyBorder(0, 0, 0, 110));*/
+        charSP.setBorder(new EmptyBorder(0, 0, 0, 110));
         Border border = BorderFactory.createLineBorder(new Color(76, 118, 181), 2);
-        //charSP.setBorder(border);
+        charSP.setBorder(border);
         hexSP.setBorder(border);
 
-        /*charModel.addTableModelListener(e -> {
+        charModel.addTableModelListener(e -> {
             if (!updating) {
                 updating = true;
                 int row = e.getFirstRow();
@@ -102,7 +100,7 @@ public class GUI implements Serializable {
                 }
                 updating = false;
             }
-        });*/
+        });
 
         hexModel.addTableModelListener(e -> {
             if (!updating) {
@@ -129,7 +127,7 @@ public class GUI implements Serializable {
         panel1.add(label);
 
         panel.add(hexSP);
-        //panel.add(charSP);
+        panel.add(charSP);
         panel.setBorder(new EmptyBorder(0, 0, 20, 100));
 
         JPanel panelMain = new JPanel(new BorderLayout());
@@ -145,51 +143,50 @@ public class GUI implements Serializable {
     //внешний вид ячеек
     private void ColumnsAndRows() {
         hexTable.setFont(new Font("Courier New", Font.BOLD, 13));
-        //charTable.setFont(new Font("Courier New", Font.BOLD, 13));
+        charTable.setFont(new Font("Courier New", Font.BOLD, 13));
 
         hexTable.setShowHorizontalLines(false);
         hexTable.setRowHeight(25);
-        //charTable.setShowHorizontalLines(false);
-        //charTable.setRowHeight(25);
+        charTable.setShowHorizontalLines(false);
+        charTable.setRowHeight(25);
 
         hexTable.setCellSelectionEnabled(true);
-        //charTable.setCellSelectionEnabled(true);
+        charTable.setCellSelectionEnabled(true);
 
         hexTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        //charTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        charTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         hexTable.getColumnModel().getColumn(0).setMaxWidth(100);
         for (int i = 1; i <hexTable.getColumnCount(); i++) {
             hexTable.getColumnModel().getColumn(i).setMaxWidth(35);
         }
         //подумать об размерах ячеек и setBorder, после закоммитить
-        /*charTable.getColumnModel().getColumn(0).setMaxWidth(100);
+        charTable.getColumnModel().getColumn(0).setMaxWidth(100);
         for (int i = 1; i <charTable.getColumnCount(); i++) {
             charTable.getColumnModel().getColumn(i).setMaxWidth(35);
-        }*/
+        }
 
         hexTable.getTableHeader().setPreferredSize(new Dimension(hexTable.getTableHeader().getPreferredSize().width,25));
-        //charTable.getTableHeader().setPreferredSize(new Dimension(hexTable.getTableHeader().getPreferredSize().width,25));
+        charTable.getTableHeader().setPreferredSize(new Dimension(hexTable.getTableHeader().getPreferredSize().width,25));
 
         hexTable.setDefaultRenderer(Object.class, new CellRenderForHex());
-        //charTable.setDefaultRenderer(Object.class, new CellRenderForChar());
+        charTable.setDefaultRenderer(Object.class, new CellRenderForChar());
 
-        //hexTable.addMouseListener(new mouseListener(hexTable,charTable));
-        hexTable.addMouseListener(new mouseListener(hexTable));
-        //charTable.addMouseListener(new mouseListener(charTable,hexTable));
+        hexTable.addMouseListener(new mouseListener(hexTable,charTable));
+        charTable.addMouseListener(new mouseListener(charTable,hexTable));
 
         hexTable.setDefaultEditor(Object.class, new ActiveCellEditorForHex(hexTable));
-        //charTable.setDefaultEditor(Object.class, new ActiveCellEditorForChar(charTable));
+        charTable.setDefaultEditor(Object.class, new ActiveCellEditorForChar(charTable));
     }
 
     //синхронная пометка ячеек
     static class mouseListener extends MouseAdapter {
         private final JTable sourceTable;
-        //private final JTable targetTable;
+        private final JTable targetTable;
 
-        public mouseListener(JTable sourceTable){
+        public mouseListener(JTable sourceTable, JTable targetTable){
             this.sourceTable = sourceTable;
-            //this.targetTable = targetTable;
+            this.targetTable = targetTable;
         }
 
         @Override
@@ -203,7 +200,7 @@ public class GUI implements Serializable {
                 selectedCol = col;
                 sourceTable.changeSelection(row, col, false, false);
 
-                //activeTable = sourceTable;
+                activeTable = sourceTable;
 
                 try {
                     label.setText(DecimalView());
@@ -212,7 +209,7 @@ public class GUI implements Serializable {
                 }
 
                 sourceTable.repaint();
-                //targetTable.repaint();
+                targetTable.repaint();
             }
         }
     }
@@ -230,16 +227,10 @@ public class GUI implements Serializable {
             }else {
                 render.setBackground(isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column)) ? table.getSelectionBackground() : Color.WHITE);
             }
-            //изменение цвета ячееек
-           /* if (isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column))){
-                render.setBackground(new Color(135, 206, 235));
-            } else {
-                render.setBackground(table.getBackground());
-            }*/
         return render;
     }
     }
-    /*private static class CellRenderForChar extends DefaultTableCellRenderer{
+    private static class CellRenderForChar extends DefaultTableCellRenderer{
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component render = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -254,7 +245,7 @@ public class GUI implements Serializable {
             }
             return render;
         }
-    }*/
+    }
 
     private static class ActiveCellEditorForHex extends AbstractCellEditor implements TableCellEditor{
         private final JTextField text;
@@ -305,7 +296,7 @@ public class GUI implements Serializable {
         }
 
     }
-    /*private static class ActiveCellEditorForChar extends AbstractCellEditor implements TableCellEditor{
+    private static class ActiveCellEditorForChar extends AbstractCellEditor implements TableCellEditor{
        private final JTextField text;
        private final JTable table;
 
@@ -356,7 +347,7 @@ public class GUI implements Serializable {
     public Object getCellEditorValue() {
         return text.getText();
     }
-    }*/
+    }
 
     // Метод для проверки, видима ли ячейка в таблице
     private static boolean isCellVisible(JTable table, int row, int column) {
@@ -370,7 +361,7 @@ public class GUI implements Serializable {
    }
 
     // Новая строка, если редактируется последняя строка таблицы
-    /*private static void addNewRow(JTable table){
+    private static void addNewRow(JTable table){
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.addTableModelListener(new TableModelListener() {
            @Override
@@ -416,7 +407,7 @@ public class GUI implements Serializable {
 
         charModel.setDataVector(charData,colNames);
 
-    }*/
+    }
 
     private static String DecimalView() throws IOException {
         String value = "";
