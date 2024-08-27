@@ -1,5 +1,5 @@
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -186,5 +186,43 @@ public class HexTableModel extends AbstractTableModel {
         if (file != null) {
             file.getChannel().force(true); // Обеспечить запись всех изменений в файл
         }
+    }
+
+
+    //Подумать над вариантом обновления таблицы путем создания новго массива с данными
+    public void pasteDataWithShift(byte[] newData, int row, int col) throws IOException {
+        int byteIndex = row * getColumnCount() + (col - 1);
+
+        //если работаем с пустой таблицей
+        if(file == null){
+            if (row >= data.length){
+                Byte[][] newDatas = new Byte[data.length + 1][bytesPerRow];
+                System.arraycopy(data, 0, newDatas, 0, data.length);
+                data = newDatas;
+                fireTableRowsInserted(data.length - 1, data.length - 1);
+
+            }
+
+            for (int i = newData.length -1 ; i > row; i--) {
+                data[i] = data[i - newData.length];
+            }
+
+            for (int i = 0; i < newData.length; i++) {
+                data[row][col -1 + i] = newData[i];
+            }
+        }else {
+            if(byteIndex < fileLength){
+                for (long i = fileLength-1; i >= byteIndex; i--) {
+                    file.seek(i);
+                    int value = file.read();
+                    file.seek(i + newData.length);
+                    file.write(value);
+                }
+            }
+            file.seek(byteIndex);
+            file.write(newData);
+            fileLength += newData.length;
+        }
+        fireTableDataChanged();
     }
 }

@@ -26,7 +26,7 @@ public class MenuBarEdit {
         this.charModel = charModel;
 
         hexTable.addMouseListener(new GUI.mouseListener(hexTable,charTable));
-        //charTable.addMouseListener(new GUI.mouseListener(charTable,hexTable));
+        charTable.addMouseListener(new GUI.mouseListener(charTable,hexTable));
 
         hexTable.addMouseListener(new GUI.mouseListener(hexTable, charTable));
 
@@ -58,7 +58,6 @@ public class MenuBarEdit {
                 copyToClipboard(selectedCol, selectedRow, activeTable);
             }
         });
-
         paste.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -291,7 +290,7 @@ public class MenuBarEdit {
     }
 
     //вставка со сдвигом
-    public void pasteWithShiftToHex(JTable activeTable){
+    /*public void pasteWithShiftToHex(JTable activeTable){
         DefaultTableModel model = (DefaultTableModel) activeTable.getModel();
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -373,6 +372,37 @@ public class MenuBarEdit {
                 throw new RuntimeException(ex);
             }
         }
+    }*/
+
+    public  void pasteWithShiftToHex(JTable activeTable){
+        int selectedRow = activeTable.getSelectedRow();
+        int selectedCol = activeTable.getSelectedColumn();
+
+        if (selectedRow == -1 || selectedCol < 1){
+            JOptionPane.showMessageDialog(null,"Выберите корректные столбец и строку!");
+            return;
+        }
+
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        try{
+            String pasteData = (String) clipboard.getData(DataFlavor.stringFlavor);
+
+            if(pasteData != null){
+                String[] hexValue = pasteData.split("\\s+");
+                byte[] bytes = new byte[hexValue.length];
+
+                for (int i = 0; i < hexValue.length; i++) {
+                    bytes[i] = (byte) Integer.parseInt(hexValue[i]);
+                }
+                hexModel.pasteDataWithShift(bytes, selectedRow, selectedCol);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedFlavorException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public void pasteWithShiftToChar(JTable activeTable){
@@ -457,14 +487,17 @@ public class MenuBarEdit {
         JPanel radioBoxPanel = new JPanel(new GridLayout(0, 1, 0, 5));
 
         ButtonGroup group = new ButtonGroup();
-        JRadioButton replace = new JRadioButton("Вставка с заменой");
+        JRadioButton replace = new JRadioButton("Вставка с заменой.");
         JRadioButton withOffset = new JRadioButton("Вставка со сдвигом в сторону больших байт.");
 
         group.add(replace);
         group.add(withOffset);
 
+        JLabel label = new JLabel("Байты пишите через пробел");
+
         radioBoxPanel.add(replace, FlowLayout.LEFT);
         radioBoxPanel.add(withOffset);
+        radioBoxPanel.add(label);
         radioBoxPanel.setBorder(BorderFactory.createTitledBorder("Что вы хотите сделать?"));
 
         JComboBox<String> comboBox = new JComboBox<>();
@@ -504,11 +537,13 @@ public class MenuBarEdit {
                         JOptionPane.showMessageDialog(null,"Неверные значения!");
                     }
                 }
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             }
         });
 
         dialog.add(radioBoxPanel);
         dialog.add(comboButtPanel, BorderLayout.SOUTH);
+
 
         dialog.setSize(350,175);
         dialog.setLocationRelativeTo(null);
@@ -547,6 +582,7 @@ public class MenuBarEdit {
                 } else{
                     cutWithShift(activeTable,selectedCol,selectedRow);
                 }
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             }
         });
 
