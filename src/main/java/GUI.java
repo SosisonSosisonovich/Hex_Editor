@@ -4,10 +4,7 @@ import javax.swing.JViewport;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
+import javax.swing.table.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
@@ -50,7 +47,18 @@ public class GUI implements Serializable {
         HexTableModel hexModel = new HexTableModel(32);
         CharTableModel charModel = new CharTableModel(32);
 
-        hexTable = new JTable(hexModel);
+        hexTable = new JTable(hexModel){
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (hexModel.getSearchResults().contains(row)) {
+                    c.setBackground(new Color(135, 206, 235)); // Подсветка найденных строк
+                } else {
+                    c.setBackground(Color.WHITE);
+                }
+                return c;
+            }
+        };
         charTable = new JTable(charModel);
 
         //флаг для определения активной на данной момент, дефолтная активная таблица hexTable

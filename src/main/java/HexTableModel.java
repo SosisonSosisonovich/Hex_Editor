@@ -3,6 +3,8 @@ import javax.swing.table.AbstractTableModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HexTableModel extends AbstractTableModel {
     private RandomAccessFile file;
@@ -10,9 +12,11 @@ public class HexTableModel extends AbstractTableModel {
     private long fileLength;
     private int initialRows = 50;
     private Byte[][] data;
+    private List<Integer> searchResults;
 
     public HexTableModel(int bytesPerRow) {
         this.bytesPerRow = bytesPerRow;
+        this.searchResults = new ArrayList<>();
         data = new Byte[initialRows][bytesPerRow];
     }
 
@@ -23,6 +27,7 @@ public class HexTableModel extends AbstractTableModel {
 
         this.file = new RandomAccessFile(file, "rw");
         this.fileLength = this.file.length();
+        this.searchResults.clear();
 
         // Очистка данных для новой загрузки
         data = null;
@@ -35,7 +40,7 @@ public class HexTableModel extends AbstractTableModel {
         if (file == null) {
             return data.length; // Возвращаем количество строк для пустой таблицы
         }
-        return (int) Math.ceil((double) fileLength / bytesPerRow) + 1;//для точного определения кол-вва строк, чтобы все влезло
+        return (int) Math.ceil((double) fileLength / bytesPerRow) + 1;//для точного определения кол-ва строк, чтобы все влезло
     }
 
     public void setRowCount(int rowCount){
@@ -188,41 +193,44 @@ public class HexTableModel extends AbstractTableModel {
         }
     }
 
+    public void searchBytes(byte[] searchBytes) {
+        SwingUtilities.invokeLater(() -> {
+            searchResults.clear();
+            try {
+                RandomAccessFile raf = this.file;
+                long segmentSize = 1024 * 1024;//для уменьшения нагрузки будем считывать данные по 1 мб за раз
+                long position = 0;// текущее положение в файле
 
-    //Подумать над вариантом обновления таблицы путем создания новго массива с данными
-    public void pasteDataWithShift(byte[] newData, int row, int col) throws IOException {
-        int byteIndex = row * getColumnCount() + (col - 1);
+                while (position < fileLength) {
+                    long remaining = fileLength - position;
+                    long currentSegmentSize = Math.min(segmentSize, remaining);
 
-        //если работаем с пустой таблицей
-        if(file == null){
-            if (row >= data.length){
-                Byte[][] newDatas = new Byte[data.length + 1][bytesPerRow];
-                System.arraycopy(data, 0, newDatas, 0, data.length);
-                data = newDatas;
-                fireTableRowsInserted(data.length - 1, data.length - 1);
+                    byte[] segment = new byte[(int) currentSegmentSize];//данные, которые сейчас проверяются
+                    raf.seek(position);
+                    raf.readFully(segment);
 
-            }
-
-            for (int i = newData.length -1 ; i > row; i--) {
-                data[i] = data[i - newData.length];
-            }
-
-            for (int i = 0; i < newData.length; i++) {
-                data[row][col -1 + i] = newData[i];
-            }
-        }else {
-            if(byteIndex < fileLength){
-                for (long i = fileLength-1; i >= byteIndex; i--) {
-                    file.seek(i);
-                    int value = file.read();
-                    file.seek(i + newData.length);
-                    file.write(value);
+                    for (int i = 0; i <= segment.length - searchBytes.length; i++) {
+                        boolean match = true;
+                        for (int j = 0; j < searchBytes.length; j++) {
+                            if (segment[i + j] != searchBytes[j]) {
+                                match = false;
+                                break;
+                            }
+                        }
+                        if (match) {
+                            searchResults.add((int) (position / bytesPerRow + i / bytesPerRow));
+                        }
+                    }
+                    position += currentSegmentSize;
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            file.seek(byteIndex);
-            file.write(newData);
-            fileLength += newData.length;
-        }
-        fireTableDataChanged();
+            fireTableDataChanged();
+        });
+    }
+
+    public List<Integer> getSearchResults() {
+        return searchResults;
     }
 }

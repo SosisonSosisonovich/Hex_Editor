@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class MenuBarEdit {
@@ -17,6 +18,7 @@ public class MenuBarEdit {
     private final JTable charTable;
     private final HexTableModel hexModel;
     private final CharTableModel charModel;
+    private int currentSearchIndex = -1;
 
     public MenuBarEdit(JMenuBar jMenuBar, HexTableModel hexModel, CharTableModel charModel, JTable hexTable, JTable charTable){
         this.jMenuBar = jMenuBar;
@@ -394,7 +396,7 @@ public class MenuBarEdit {
                 for (int i = 0; i < hexValue.length; i++) {
                     bytes[i] = (byte) Integer.parseInt(hexValue[i]);
                 }
-                hexModel.pasteDataWithShift(bytes, selectedRow, selectedCol);
+                //hexModel.pasteDataWithShift(bytes, selectedRow, selectedCol);
             }
 
         } catch (IOException e) {
@@ -604,10 +606,14 @@ public class MenuBarEdit {
         JTextField textField = new JTextField("Байты вводите через пробел", 20);
         JButton textButt = new JButton("Поиск по тексту");
         JButton hexButt = new JButton("Поиск байт");
+        JButton nextButton = new JButton(">");
+        JButton prevButton = new JButton("<");
 
         textPanel.add(textField);
-        buttPanel.add(textButt);
+        //buttPanel.add(textButt);
         buttPanel.add(hexButt);
+        buttPanel.add(prevButton);
+        buttPanel.add(nextButton);
 
         textButt.addActionListener(new ActionListener() {
             @Override
@@ -615,33 +621,47 @@ public class MenuBarEdit {
                 String text = textField.getText().toLowerCase();
                 String[] arr = text.split("");
 
-                //(charTable, hexTable, charModel, arr);
+                //find(charTable, hexTable, charModel, arr);
             }
         });
 
         hexButt.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String text = textField.getText().toLowerCase();
+                String text = textField.getText().toUpperCase().trim();
                 String resultText = text.replaceAll("0x", "");//удаляем маску, если она есть
-                String[] arr = resultText.split(" ");
+                String[] arr = resultText.split("\\s+");
 
-                //find(hexTable, charTable, hexModel, arr);
+                find(hexTable, hexModel, arr);
             }
         });
 
-        searchDialog.addWindowListener(new WindowAdapter() {
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                navigateSearchResults(1, hexModel, hexTable);
+            }
+        });
+
+        prevButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                navigateSearchResults(-1, hexModel, hexTable);
+            }
+        });
+
+        /*searchDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 hexTable.setRowSorter(null);
                 charTable.setRowSorter(null);
             }
-        });
+        });*/
 
         searchDialog.add(textPanel, BorderLayout.NORTH);
         searchDialog.add(buttPanel, BorderLayout.SOUTH);
 
-        searchDialog.setSize(300,100);
+        searchDialog.setSize(350,100);
         searchDialog.setLocationRelativeTo(null);
         searchDialog.setAlwaysOnTop(true);
         searchDialog.setVisible(true);
@@ -650,8 +670,8 @@ public class MenuBarEdit {
     }
 
     //поиск по таблице
-    public void find(JTable table1, JTable table2, DefaultTableModel model, String[] arr){
-        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+    /*public void find(JTable table1, JTable table2, HexTableModel model, String[] arr){
+        TableRowSorter<HexTableModel> sorter = new TableRowSorter<>(model);
             table1.setRowSorter(sorter);
             table2.setRowSorter(sorter);
 
@@ -680,4 +700,89 @@ public class MenuBarEdit {
 
         sorter.setRowFilter(rowFilter);
     }
+
+    public void find(JTable table1, JTable table2, CharTableModel model, String[] arr){
+        TableRowSorter<CharTableModel> sorter = new TableRowSorter<>(model);
+        table1.setRowSorter(sorter);
+        table2.setRowSorter(sorter);
+
+        RowFilter<Object, Object> rowFilter = new RowFilter<Object, Object>() {
+            @Override
+            public boolean include(Entry<? extends Object, ? extends Object> entry) {
+                // Создаем строку из значений текущей строки
+                StringBuilder rowValues = new StringBuilder();
+                for (int i = 0; i < entry.getValueCount(); i++) {
+                    Object value = entry.getValue(i);
+                    if (value != null) {
+                        rowValues.append(value.toString());
+                    }
+                }
+
+                // Создаем строку из терминов, заданных пользователем
+                StringBuilder searchTerm = new StringBuilder();
+                for (String term : arr) {
+                    searchTerm.append(term);
+                }
+
+                // Проверяем, содержится ли заданная пользователем последовательность в текущей строке
+                return rowValues.toString().contains(searchTerm.toString());
+            }
+        };
+
+        sorter.setRowFilter(rowFilter);
+    }*/
+
+    public void find(JTable table, HexTableModel model, String[] arr){
+        byte[] searchBytes = new byte[arr.length];
+        try {
+            for (int i = 0; i < arr.length; i++) {
+                searchBytes[i] = (byte) Integer.parseInt(arr[i], 16);
+            }
+            model.searchBytes(searchBytes);
+            currentSearchIndex = 0; // Сброс к первому найденному результату
+            highlightSearchResults(table, model);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Неверные значения!");
+        }
+    }
+
+    /*public void find(JTable table, CharTableModel model, String[] arr){
+        byte[] searchBytes = new byte[arr.length];
+        try {
+            for (int i = 0; i < arr.length; i++) {
+                searchBytes[i] = (byte) Integer.parseInt(arr[i], 16);
+            }
+            model.searchBytes(searchBytes);
+            currentSearchIndex = 0; // Сброс к первому найденному результату
+            highlightSearchResults(table, model);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Неверные значения!");
+        }
+    }*/
+
+    //выделение найденых строк и прокрутка
+    private void highlightSearchResults(JTable table, HexTableModel model) {
+        List<Integer> searchResults = model.getSearchResults();
+        if (!searchResults.isEmpty()) {
+            table.setRowSelectionInterval(searchResults.get(currentSearchIndex), searchResults.get(currentSearchIndex));
+            table.scrollRectToVisible(table.getCellRect(searchResults.get(currentSearchIndex), 0, true));
+        } else {
+            JOptionPane.showMessageDialog(null, "Не найдено.");
+        }
+    }
+
+    //переход к следующему/предыдущему результату поиска
+    private void navigateSearchResults(int direction, HexTableModel model, JTable table) {
+        List<Integer> searchResults = model.getSearchResults();
+        if (!searchResults.isEmpty()) {
+            currentSearchIndex = (currentSearchIndex + direction) % searchResults.size();
+            if (currentSearchIndex < 0) {
+                currentSearchIndex = searchResults.size() - 1;
+            }
+            highlightSearchResults(table, model);
+        } else {
+            JOptionPane.showMessageDialog(null, "No search results to navigate.");
+        }
+    }
+
 }

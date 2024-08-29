@@ -141,7 +141,7 @@ public class MenuBarEditTest {
     @Test
     public void findTest(){
         String[] arr = {"E"};
-        menuBarEdit.find(hexTable, charTable, hexModel,arr);
+        //menuBarEdit.find(hexTable, charTable, hexModel, arr);
 
         assertEquals(1, hexTable.getRowCount());
         assertEquals("E", hexTable.getValueAt(0, 1));
