@@ -64,7 +64,7 @@ public class MenuBarEdit {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JTable activeTable = GUI.activeTable;
-                JDialog dialog = pasteDialog(activeTable);
+                JDialog dialog = pasteDialog(activeTable, hexModel);
             }
         });
         find.addActionListener(new ActionListener() {
@@ -108,57 +108,20 @@ public class MenuBarEdit {
     }
 
     public void cutWithShift(JTable activeTable, int[] selectedCol, int[] selectedRow){
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        StringBuilder cutData = new StringBuilder();
-        TableModel model = activeTable.getModel();
+        int startRow = selectedRow[0];
+        int startColumn = selectedCol[0];
+        int endRow = selectedRow[selectedRow.length - 1];
+        int endColumn = selectedCol[selectedCol.length - 1];
 
-        int rowCount = activeTable.getRowCount();
-        int colCount = activeTable.getColumnCount();
+        // Определение начальной и конечной позиции удаления в байтах
+        int startByte = startRow * hexModel.getBytesPerRow() + (startColumn - 1);
+        int endByte = endRow * hexModel.getBytesPerRow() + (endColumn - 1);
 
-        //копируем данные
-        for(int row: selectedRow){
-            for (int col : selectedCol){
-                cutData.append(model.getValueAt(row, col)).append("\t");
-                model.setValueAt(null, row, col);
-            }
-            cutData.append("\n");
-        }
+        // Количество байтов для удаления
+        int numBytesToDelete = endByte - startByte + 1;
 
-        StringSelection stringSelection = new StringSelection(cutData.toString());
-        clipboard.setContents(stringSelection, null);
-
-        // Удаление выбранных ячеек
-        for (int row : selectedRow) {
-            for (int col : selectedCol) {
-                model.setValueAt(null, row, col);
-            }
-        }
-
-        // Сдвиг данных влево и вверх
-        for (int row = 0; row < rowCount; row++) {
-            for (int col = 0; col < colCount; col++) {
-                if (model.getValueAt(row, col) == null) {
-                    int srcRow = row;
-                    int srcCol = col;
-
-                    // Найти следующую непустую ячейку
-                    do {
-                        srcCol++;
-                        if (srcCol >= colCount) {
-                            srcCol = 0;
-                            srcRow++;
-                        }
-                    } while (srcRow < rowCount && model.getValueAt(srcRow, srcCol) == null);
-
-                    if (srcRow < rowCount) {
-                        Object value = model.getValueAt(srcRow, srcCol);
-                        model.setValueAt(value, row, col);
-                        model.setValueAt(null, srcRow, srcCol);
-                    }
-                }
-            }
-        }
-
+        // Выполнение удаления
+        hexModel.deleteBytes(startRow, startColumn, numBytesToDelete);
     }
 
     public void copyToClipboard(int[] selectedCol, int[] selectedRow, JTable activeTable){
@@ -292,198 +255,44 @@ public class MenuBarEdit {
     }
 
     //вставка со сдвигом
-    /*public void pasteWithShiftToHex(JTable activeTable){
-        DefaultTableModel model = (DefaultTableModel) activeTable.getModel();
-
+    public  void pasteWithShiftToHex(JTable activeTable, HexTableModel model){
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clipboard.getContents(this);
 
         if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
             try {
                 String pasteData = (String) transferable.getTransferData(DataFlavor.stringFlavor);
-                // Разбиваем строку на символы
-                String[] characters = pasteData.split("\\s");
-                int rowCount = model.getRowCount();
-                int colCount = model.getColumnCount();
 
-                int charLength = characters.length;
                 int selectedRow = activeTable.getSelectedRow();
-                int selectedCol = activeTable.getSelectedColumn();
+                int selectedColumn = activeTable.getSelectedColumn();
 
-                //сдвиг данных вправо
-                for (int row = rowCount-1; row >= selectedRow; row--) {
-                    for (int col = colCount-1; col >= selectedCol + charLength ; col--) {
-                        //если количества столбцов в строке не хватает, то переходим на предыдущую строку
-                        int srcRow = (col - charLength < 1) ? row - 1 : row;
-                        //если количества столбцов в строке не хватает, то переходим на последний столбец предыдущей строки плюс смещение
-                        int srcCol = (col - charLength < 1) ? colCount - 1 + (col - charLength) : col - charLength;
+                if (selectedRow == -1 || selectedColumn <1){
+                    JOptionPane.showMessageDialog(null,"Выберите ячейку!");
+                    return;
+                }
 
-                        if (srcCol < 0) {
-                            srcCol += colCount;
-                            srcRow--;
-                        }
+                String[] byteStrings = pasteData.trim().split("\\s+");
+                byte[] bytesToInsert = new byte[byteStrings.length];
 
-                        if (srcRow >= 0) {
-                            Object value = model.getValueAt(srcRow, srcCol);
-                            model.setValueAt(value, row, col);
-                        }
+                try {
+                    for (int i = 0; i < byteStrings.length; i++) {
+                        bytesToInsert[i] = (byte) Integer.parseInt(byteStrings[i], 16);
                     }
+
+                    model.insertBytes(selectedRow, selectedColumn, bytesToInsert);
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Неверные значения!");
                 }
-
-                int row = selectedRow;
-                int col = selectedCol;
-
-                if (activeTable == hexTable){
-                    for (String character : characters) {
-                        if (row < activeTable.getRowCount() && col < activeTable.getColumnCount()) {
-                            String value = character;
-
-                            activeTable.setValueAt(value, row, col);
-                            col++;
-
-                            // Если достигнут конец строки таблицы, переходим на следующую строку
-                            if (col == activeTable.getColumnCount()) {
-                                col = 1;
-                                row++;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                }
-                else{
-                    String[] character = characters.toString().split("");
-                    for (String arr : character) {
-                        if (row < activeTable.getRowCount() && col < activeTable.getColumnCount()) {
-                            String value = String.valueOf(arr);
-
-                            activeTable.setValueAt(value, row, col);
-                            col++;
-                            // Если достигнут конец строки таблицы, переходим на следующую строку
-                            if (col == activeTable.getColumnCount()) {
-                                col = 1;
-                                row++;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                }
-
-            } catch (UnsupportedFlavorException | IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-    }*/
-
-    public  void pasteWithShiftToHex(JTable activeTable){
-        int selectedRow = activeTable.getSelectedRow();
-        int selectedCol = activeTable.getSelectedColumn();
-
-        if (selectedRow == -1 || selectedCol < 1){
-            JOptionPane.showMessageDialog(null,"Выберите корректные столбец и строку!");
-            return;
-        }
-
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        try{
-            String pasteData = (String) clipboard.getData(DataFlavor.stringFlavor);
-
-            if(pasteData != null){
-                String[] hexValue = pasteData.split("\\s+");
-                byte[] bytes = new byte[hexValue.length];
-
-                for (int i = 0; i < hexValue.length; i++) {
-                    bytes[i] = (byte) Integer.parseInt(hexValue[i]);
-                }
-                //hexModel.pasteDataWithShift(bytes, selectedRow, selectedCol);
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedFlavorException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    public void pasteWithShiftToChar(JTable activeTable){
-        DefaultTableModel model = (DefaultTableModel) activeTable.getModel();
-
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        Transferable transferable = clipboard.getContents(this);
-
-        if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-            try {
-                String pasteData = (String) transferable.getTransferData(DataFlavor.stringFlavor);
-                // Разбиваем строку на символы
-                char[] characters = pasteData.toCharArray();
-                int rowCount = model.getRowCount();
-                int colCount = model.getColumnCount();
-
-                int charLength = characters.length;
-                int selectedRow = activeTable.getSelectedRow();
-                int selectedCol = activeTable.getSelectedColumn();
-
-                //сдвиг данных вправо
-                for (int row = rowCount-1; row >= selectedRow; row--) {
-                    for (int col = colCount-1; col >= selectedCol + charLength ; col--) {
-                        //если количества столбцов в строке не хватает, то переходим на предыдущую строку
-                        int srcRow = (col - charLength < 1) ? row - 1 : row;
-                        //если количества столбцов в строке не хватает, то переходим на последний столбец предыдущей строки плюс смещение
-                        int srcCol = (col - charLength < 1) ? colCount - 1 + (col - charLength) : col - charLength;
-
-                        if (srcCol < 0) {
-                            srcCol += colCount;
-                            srcRow--;
-                        }
-
-                        if (srcRow >= 0) {
-                            Object value = model.getValueAt(srcRow, srcCol);
-                            model.setValueAt(value, row, col);
-                        }
-                    }
-                }
-
-
-                //вводим новые переменные, чтобы избежать изменения старых
-                int row = selectedRow;
-                int col = selectedCol;
-                for (char character : characters) {
-                    String value;
-
-                    if (activeTable == hexTable) {
-                        value = String.format("%02X", (int) character);
-                        activeTable.setValueAt(value, row, col);
-                        col++;
-
-                        // Если достигнут конец строки таблицы, переходим на следующую строку
-                        if (col == activeTable.getColumnCount()) {
-                            col = 1;
-                            row++;
-                        }
-
-                    } else {
-                        value = String.valueOf(character);
-
-                        activeTable.setValueAt(value, row, col);
-                        col++;
-
-                        // Если достигнут конец строки таблицы, переходим на следующую строку
-                        if (col == activeTable.getColumnCount()) {
-                            col = 1;
-                            row++;
-                        }
-                    }
-                }
-
-            } catch (UnsupportedFlavorException | IOException ex) {
-                throw new RuntimeException(ex);
+            } catch (UnsupportedFlavorException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
 
-    private JDialog pasteDialog(JTable activeTable){
+    private JDialog pasteDialog(JTable activeTable, HexTableModel model){
         JDialog dialog = new JDialog((JFrame)null, "Вставка");
 
         JPanel radioBoxPanel = new JPanel(new GridLayout(0, 1, 0, 5));
@@ -503,7 +312,7 @@ public class MenuBarEdit {
         radioBoxPanel.setBorder(BorderFactory.createTitledBorder("Что вы хотите сделать?"));
 
         JComboBox<String> comboBox = new JComboBox<>();
-        comboBox.addItem("Текст");
+        //comboBox.addItem("Текст");
         comboBox.addItem("Шестнадцетиричные значения");
 
         JButton buttOk = new JButton("OK");
@@ -516,7 +325,8 @@ public class MenuBarEdit {
         buttOk.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if ((String)comboBox.getSelectedItem() == "Текст"){
+
+                /*if ((String)comboBox.getSelectedItem() == "Текст"){
                     try {
                         if (replace.isSelected()) {
                             pasteFromClipboardToChar(activeTable);
@@ -526,19 +336,19 @@ public class MenuBarEdit {
                     } catch (NumberFormatException ex){
                         JOptionPane.showMessageDialog(null,"Неверные значения!");
                     }
-                }
+                }*/
 
-                else{
+                //else{
                     try {
                         if (replace.isSelected()) {
                             pasteFromClipboardToHex(activeTable);
                         }else {
-                            pasteWithShiftToHex(activeTable);
+                            pasteWithShiftToHex(activeTable, model);
                         }
                     } catch (Exception ex){
                         JOptionPane.showMessageDialog(null,"Неверные значения!");
                     }
-                }
+                //}
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             }
         });
@@ -578,6 +388,11 @@ public class MenuBarEdit {
             public void actionPerformed(ActionEvent e) {
                 int [] selectedCol = GUI.activeTable.getSelectedColumns();
                 int [] selectedRow = GUI.activeTable.getSelectedRows();
+
+                if (selectedRow.length == 0 || selectedCol.length == 0) {
+                    JOptionPane.showMessageDialog(null, "No cells selected");
+                    return;
+                }
 
                 if(replace.isSelected()){
                     cutToClipboard(selectedCol,selectedRow,activeTable);
@@ -650,14 +465,6 @@ public class MenuBarEdit {
             }
         });
 
-        /*searchDialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                hexTable.setRowSorter(null);
-                charTable.setRowSorter(null);
-            }
-        });*/
-
         searchDialog.add(textPanel, BorderLayout.NORTH);
         searchDialog.add(buttPanel, BorderLayout.SOUTH);
 
@@ -670,68 +477,6 @@ public class MenuBarEdit {
     }
 
     //поиск по таблице
-    /*public void find(JTable table1, JTable table2, HexTableModel model, String[] arr){
-        TableRowSorter<HexTableModel> sorter = new TableRowSorter<>(model);
-            table1.setRowSorter(sorter);
-            table2.setRowSorter(sorter);
-
-        RowFilter<Object, Object> rowFilter = new RowFilter<Object, Object>() {
-            @Override
-            public boolean include(Entry<? extends Object, ? extends Object> entry) {
-                // Создаем строку из значений текущей строки
-                StringBuilder rowValues = new StringBuilder();
-                for (int i = 0; i < entry.getValueCount(); i++) {
-                    Object value = entry.getValue(i);
-                    if (value != null) {
-                        rowValues.append(value.toString());
-                    }
-                }
-
-                // Создаем строку из терминов, заданных пользователем
-                StringBuilder searchTerm = new StringBuilder();
-                for (String term : arr) {
-                    searchTerm.append(term);
-                }
-
-                // Проверяем, содержится ли заданная пользователем последовательность в текущей строке
-                return rowValues.toString().contains(searchTerm.toString());
-            }
-        };
-
-        sorter.setRowFilter(rowFilter);
-    }
-
-    public void find(JTable table1, JTable table2, CharTableModel model, String[] arr){
-        TableRowSorter<CharTableModel> sorter = new TableRowSorter<>(model);
-        table1.setRowSorter(sorter);
-        table2.setRowSorter(sorter);
-
-        RowFilter<Object, Object> rowFilter = new RowFilter<Object, Object>() {
-            @Override
-            public boolean include(Entry<? extends Object, ? extends Object> entry) {
-                // Создаем строку из значений текущей строки
-                StringBuilder rowValues = new StringBuilder();
-                for (int i = 0; i < entry.getValueCount(); i++) {
-                    Object value = entry.getValue(i);
-                    if (value != null) {
-                        rowValues.append(value.toString());
-                    }
-                }
-
-                // Создаем строку из терминов, заданных пользователем
-                StringBuilder searchTerm = new StringBuilder();
-                for (String term : arr) {
-                    searchTerm.append(term);
-                }
-
-                // Проверяем, содержится ли заданная пользователем последовательность в текущей строке
-                return rowValues.toString().contains(searchTerm.toString());
-            }
-        };
-
-        sorter.setRowFilter(rowFilter);
-    }*/
-
     public void find(JTable table, HexTableModel model, String[] arr){
         byte[] searchBytes = new byte[arr.length];
         try {
@@ -745,20 +490,6 @@ public class MenuBarEdit {
             JOptionPane.showMessageDialog(null, "Неверные значения!");
         }
     }
-
-    /*public void find(JTable table, CharTableModel model, String[] arr){
-        byte[] searchBytes = new byte[arr.length];
-        try {
-            for (int i = 0; i < arr.length; i++) {
-                searchBytes[i] = (byte) Integer.parseInt(arr[i], 16);
-            }
-            model.searchBytes(searchBytes);
-            currentSearchIndex = 0; // Сброс к первому найденному результату
-            highlightSearchResults(table, model);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(null, "Неверные значения!");
-        }
-    }*/
 
     //выделение найденых строк и прокрутка
     private void highlightSearchResults(JTable table, HexTableModel model) {

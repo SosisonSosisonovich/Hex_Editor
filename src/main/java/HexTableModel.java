@@ -178,6 +178,10 @@ public class HexTableModel extends AbstractTableModel {
         }
     }
 
+    public int getBytesPerRow() {
+        return bytesPerRow;
+    }
+
     private void addEmptyRow() {
         if (file == null) {
             Byte[][] newData = new Byte[data.length + 1][bytesPerRow];
@@ -232,5 +236,125 @@ public class HexTableModel extends AbstractTableModel {
 
     public List<Integer> getSearchResults() {
         return searchResults;
+    }
+
+    public void insertBytes(int startRow, int startColumn, byte[] newBytes) {
+        try {
+            // Вычисление позиции вставки
+            int insertPosition = startRow * bytesPerRow + (startColumn - 1);
+
+            if (file == null) {
+                Byte[] flatData = flattenDataArray();
+                int oldLength = flatData.length;
+
+                Byte[] newData = new Byte[oldLength + newBytes.length];
+
+                // Копирование данных до позиции вставки
+                System.arraycopy(flatData, 0, newData, 0, insertPosition);
+
+                // Вставка новых байтов
+                for (int i = 0; i < newBytes.length; i++) {
+                    newData[insertPosition + i] = newBytes[i];
+                }
+
+                // Копирование данных после позиции вставки
+                System.arraycopy(flatData, insertPosition, newData, insertPosition + newBytes.length, oldLength - insertPosition);
+
+                expandDataArray(newData);
+            } else {
+                // Сдвигаем данные в файле, чтобы освободить место для новых байтов
+                long newFileLength = fileLength + newBytes.length;
+                file.setLength(newFileLength);
+
+                // Сдвигаем существующие байты вниз, начиная с конца файла
+                for (long i = fileLength - 1; i >= insertPosition; i--) {
+                    file.seek(i);
+                    byte b = file.readByte();
+                    file.seek(i + newBytes.length);
+                    file.writeByte(b);
+                }
+
+                // Вставляем новые байты
+                file.seek(insertPosition);
+                file.write(newBytes);
+
+                fileLength = newFileLength;
+            }
+
+            fireTableDataChanged();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteBytes(int startRow, int startColumn, int numBytesToDelete) {
+        try {
+            // Вычисление позиции удаления
+            int deletePosition = startRow * bytesPerRow + (startColumn - 1);
+
+            if (file == null) {
+                // Работа с массивом данных
+                Byte[] flatData = flattenDataArray();
+
+                int oldLength = flatData.length;
+
+                // Проверка, чтобы не удалить больше, чем есть данных
+                if (deletePosition + numBytesToDelete > oldLength) {
+                    numBytesToDelete = oldLength - deletePosition;
+                }
+
+                Byte[] newData = new Byte[oldLength - numBytesToDelete];
+
+                // Копирование данных до позиции удаления
+                System.arraycopy(flatData, 0, newData, 0, deletePosition);
+
+                // Копирование данных после удаления
+                System.arraycopy(flatData, deletePosition + numBytesToDelete, newData, deletePosition, oldLength - deletePosition - numBytesToDelete);
+
+                expandDataArray(newData);
+
+            } else {
+                // Проверка, чтобы не удалить больше, чем есть данных
+                if (deletePosition + numBytesToDelete > fileLength) {
+                    numBytesToDelete = (int) (fileLength - deletePosition);
+                }
+
+                // Сдвигаем существующие байты вверх, начиная с позиции после удаления
+                for (long i = deletePosition + numBytesToDelete; i < fileLength; i++) {
+                    file.seek(i);
+                    byte b = file.readByte();
+                    file.seek(i - numBytesToDelete);
+                    file.writeByte(b);
+                }
+
+                // Уменьшаем длину файла
+                long newFileLength = fileLength - numBytesToDelete;
+                file.setLength(newFileLength);
+                fileLength = newFileLength;
+            }
+
+            fireTableDataChanged();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //преобразование двумерного массива в одномерный массив
+    private Byte[] flattenDataArray() {
+        // Преобразует двумерный массив данных в одномерный
+        Byte[] flatData = new Byte[data.length * bytesPerRow];
+        for (int i = 0; i < data.length; i++) {
+            System.arraycopy(data[i], 0, flatData, i * bytesPerRow, bytesPerRow);
+        }
+        return flatData;
+    }
+
+    //преобразование одномерного массива обратно в двумерный
+    private void expandDataArray(Byte[] newData) {
+        int rows = (int) Math.ceil((double) newData.length / bytesPerRow);
+        data = new Byte[rows][bytesPerRow];
+        for (int i = 0; i < newData.length; i++) {
+            data[i / bytesPerRow][i % bytesPerRow] = newData[i];
+        }
     }
 }

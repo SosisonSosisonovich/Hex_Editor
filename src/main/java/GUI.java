@@ -3,7 +3,6 @@ import java.awt.Rectangle;
 import javax.swing.JViewport;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -12,10 +11,7 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.util.Random;
-import java.util.Vector;
 
 public class GUI implements Serializable {
     private final JFrame frame;
@@ -155,6 +151,9 @@ public class GUI implements Serializable {
         hexTable.setCellSelectionEnabled(true);
         charTable.setCellSelectionEnabled(true);
 
+        hexTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        charTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
         hexTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         charTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
@@ -229,6 +228,8 @@ public class GUI implements Serializable {
             }else {
                 render.setBackground(isSelected || (column == selectedCol && row == selectedRow && isCellVisible(table, row, column)) ? table.getSelectionBackground() : Color.WHITE);
             }
+
+
         return render;
     }
     }
@@ -349,6 +350,7 @@ public class GUI implements Serializable {
         return text.getText();
     }
     }
+
 
     // Метод для проверки, видима ли ячейка в таблице
     private static boolean isCellVisible(JTable table, int row, int column) {

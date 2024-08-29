@@ -1,6 +1,4 @@
-import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -191,44 +189,4 @@ public class CharTableModel extends AbstractTableModel {
         }
     }
 
-    public void searchBytes(byte[] searchBytes) {
-        SwingUtilities.invokeLater(() -> {
-            searchResults.clear();
-            try {
-                RandomAccessFile raf = this.file;
-                long segmentSize = 1024 * 1024;//для уменьшения нагрузки будем считывать данные по 1 мб за раз
-                long position = 0;// текущее положение в файле
-
-                while (position < fileLength) {
-                    long remaining = fileLength - position;
-                    long currentSegmentSize = Math.min(segmentSize, remaining);
-
-                    byte[] segment = new byte[(int) currentSegmentSize];//данные, которые сейчас проверяются
-                    raf.seek(position);
-                    raf.readFully(segment);
-
-                    for (int i = 0; i <= segment.length - searchBytes.length; i++) {
-                        boolean match = true;
-                        for (int j = 0; j < searchBytes.length; j++) {
-                            if (segment[i + j] != searchBytes[j]) {
-                                match = false;
-                                break;
-                            }
-                        }
-                        if (match) {
-                            searchResults.add((int) (position / bytesPerRow + i / bytesPerRow));
-                        }
-                    }
-                    position += currentSegmentSize;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            fireTableDataChanged();
-        });
-    }
-
-    public List<Integer> getSearchResults() {
-        return searchResults;
-    }
 }
