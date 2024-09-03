@@ -7,7 +7,6 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             try {
                 GUI gui = new GUI();
-                System.out.print("");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
