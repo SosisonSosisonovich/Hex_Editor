@@ -414,21 +414,21 @@ public class MenuBarEdit {
                 String resultText = text.replaceAll("0x", "");//удаляем маску, если она есть
                 String[] arr = resultText.split("\\s+");
 
-                find(hexTable, hexModel, arr);
+                find(hexTable, hexModel, arr, searchDialog);
             }
         });
 
         nextButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                navigateSearchResults(1, hexModel, hexTable);
+                navigateSearchResults(1, hexModel, hexTable,searchDialog);
             }
         });
 
         prevButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                navigateSearchResults(-1, hexModel, hexTable);
+                navigateSearchResults(-1, hexModel, hexTable, searchDialog);
             }
         });
 
@@ -444,7 +444,7 @@ public class MenuBarEdit {
     }
 
     //поиск по таблице
-    public void find(JTable table, HexTableModel model, String[] arr){
+    public void find(JTable table, HexTableModel model, String[] arr, JDialog dialog){
         byte[] searchBytes = new byte[arr.length];
         try {
             for (int i = 0; i < arr.length; i++) {
@@ -452,34 +452,34 @@ public class MenuBarEdit {
             }
             model.searchBytes(searchBytes);
             currentSearchIndex = 0; // Сброс к первому найденному результату
-            highlightSearchResults(table, model);
+            highlightSearchResults(table, model, dialog);
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(null, "Неверные значения!");
         }
     }
 
     //выделение найденых строк и прокрутка
-    private void highlightSearchResults(JTable table, HexTableModel model) {
+    private void highlightSearchResults(JTable table, HexTableModel model, JDialog dialog) {
         List<Integer> searchResults = model.getSearchResults();
         if (!searchResults.isEmpty()) {
             table.setRowSelectionInterval(searchResults.get(currentSearchIndex), searchResults.get(currentSearchIndex));
             table.scrollRectToVisible(table.getCellRect(searchResults.get(currentSearchIndex), 0, true));
         } else {
-            JOptionPane.showMessageDialog(null, "Не найдено.");
+            JOptionPane.showMessageDialog(dialog, "Не найдено.");
         }
     }
 
     //переход к следующему/предыдущему результату поиска
-    private void navigateSearchResults(int direction, HexTableModel model, JTable table) {
+    private void navigateSearchResults(int direction, HexTableModel model, JTable table, JDialog dialog) {
         List<Integer> searchResults = model.getSearchResults();
         if (!searchResults.isEmpty()) {
             currentSearchIndex = (currentSearchIndex + direction) % searchResults.size();
             if (currentSearchIndex < 0) {
                 currentSearchIndex = searchResults.size() - 1;
             }
-            highlightSearchResults(table, model);
+            highlightSearchResults(table, model, dialog);
         } else {
-            JOptionPane.showMessageDialog(null, "No search results to navigate.");
+            JOptionPane.showMessageDialog(dialog, "No search results to navigate.");
         }
     }
 
