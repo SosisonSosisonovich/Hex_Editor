@@ -1,16 +1,11 @@
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class MenuBarEdit {
     private final JMenuBar jMenuBar;
@@ -80,7 +75,6 @@ public class MenuBarEdit {
                 for (int i = 1; i < hexTable.getColumnCount(); i++) {
                     hexTable.getColumnModel().getColumn(i).setMaxWidth(35);
                 }
-                //charModel.addColumn(charModel.getColumnCount()+1);
                 charModel.addColumn();
                 for (int i = 1; i < charTable.getColumnCount(); i++) {
                     charTable.getColumnModel().getColumn(i).setMaxWidth(35);
@@ -107,7 +101,7 @@ public class MenuBarEdit {
         clipboard.setContents(stringSelection, null);
     }
 
-    public void cutWithShift(JTable activeTable, int[] selectedCol, int[] selectedRow){
+    public void cutWithShift(int[] selectedCol, int[] selectedRow){
         int startRow = selectedRow[0];
         int startColumn = selectedCol[0];
         int endRow = selectedRow[selectedRow.length - 1];
@@ -312,7 +306,6 @@ public class MenuBarEdit {
         radioBoxPanel.setBorder(BorderFactory.createTitledBorder("Что вы хотите сделать?"));
 
         JComboBox<String> comboBox = new JComboBox<>();
-        //comboBox.addItem("Текст");
         comboBox.addItem("Шестнадцетиричные значения");
 
         JButton buttOk = new JButton("OK");
@@ -325,20 +318,6 @@ public class MenuBarEdit {
         buttOk.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                /*if ((String)comboBox.getSelectedItem() == "Текст"){
-                    try {
-                        if (replace.isSelected()) {
-                            pasteFromClipboardToChar(activeTable);
-                        } else {
-                            pasteWithShiftToChar(activeTable);
-                        }
-                    } catch (NumberFormatException ex){
-                        JOptionPane.showMessageDialog(null,"Неверные значения!");
-                    }
-                }*/
-
-                //else{
                     try {
                         if (replace.isSelected()) {
                             pasteFromClipboardToHex(activeTable);
@@ -397,7 +376,7 @@ public class MenuBarEdit {
                 if(replace.isSelected()){
                     cutToClipboard(selectedCol,selectedRow,activeTable);
                 } else{
-                    cutWithShift(activeTable,selectedCol,selectedRow);
+                    cutWithShift(selectedCol,selectedRow);
                 }
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             }
@@ -419,26 +398,14 @@ public class MenuBarEdit {
         JPanel buttPanel = new JPanel();
 
         JTextField textField = new JTextField("Байты вводите через пробел", 20);
-        JButton textButt = new JButton("Поиск по тексту");
         JButton hexButt = new JButton("Поиск байт");
         JButton nextButton = new JButton(">");
         JButton prevButton = new JButton("<");
 
         textPanel.add(textField);
-        //buttPanel.add(textButt);
         buttPanel.add(hexButt);
         buttPanel.add(prevButton);
         buttPanel.add(nextButton);
-
-        textButt.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String text = textField.getText().toLowerCase();
-                String[] arr = text.split("");
-
-                //find(charTable, hexTable, charModel, arr);
-            }
-        });
 
         hexButt.addActionListener(new ActionListener() {
             @Override

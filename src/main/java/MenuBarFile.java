@@ -1,5 +1,4 @@
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -26,7 +25,6 @@ public class MenuBarFile {
             @Override
             public void actionPerformed(ActionEvent e) {
                 news(hexModel, charModel);
-                //news(hexModel);
 
                 JFileChooser fileChooser = new JFileChooser();
                 int a = fileChooser.showOpenDialog(null);
@@ -93,8 +91,6 @@ public class MenuBarFile {
     public void news(HexTableModel hexModel, CharTableModel charModel){
         hexModel.clearTable();
         charModel.clearTable();
-        //charModel.setRowCount(0);
-        //charModel.setRowCount(50);
     }
 
     public void save(File file,  List<String[]> tableData){

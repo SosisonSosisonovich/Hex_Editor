@@ -341,7 +341,6 @@ public class HexTableModel extends AbstractTableModel {
 
     //преобразование двумерного массива в одномерный массив
     private Byte[] flattenDataArray() {
-        // Преобразует двумерный массив данных в одномерный
         Byte[] flatData = new Byte[data.length * bytesPerRow];
         for (int i = 0; i < data.length; i++) {
             System.arraycopy(data[i], 0, flatData, i * bytesPerRow, bytesPerRow);

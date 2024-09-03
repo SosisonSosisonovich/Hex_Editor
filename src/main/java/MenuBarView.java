@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigInteger;
-import java.util.Vector;
 
 public class MenuBarView {
     private JMenuBar jMenuBar;

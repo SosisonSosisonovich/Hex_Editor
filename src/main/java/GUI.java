@@ -57,12 +57,11 @@ public class GUI implements Serializable {
         };
         charTable = new JTable(charModel);
 
-        //флаг для определения активной на данной момент, дефолтная активная таблица hexTable
+        //флаг для определения активной таблицы на данной момент, дефолтная активная таблица hexTable
         activeTable = hexTable;
 
         JMenuBar jMenuBar = new JMenuBar();
         new MenuBarFile(jMenuBar, hexModel, charModel);
-        //new MenuBarFile(jMenuBar,hexModel);
         new MenuBarEdit(jMenuBar,hexModel,charModel,hexTable,charTable);
         new MenuBarView(jMenuBar,hexModel,hexTable);
 
@@ -161,7 +160,8 @@ public class GUI implements Serializable {
         for (int i = 1; i <hexTable.getColumnCount(); i++) {
             hexTable.getColumnModel().getColumn(i).setMaxWidth(35);
         }
-        //подумать об размерах ячеек и setBorder, после закоммитить
+
+
         charTable.getColumnModel().getColumn(0).setMaxWidth(100);
         for (int i = 1; i <charTable.getColumnCount(); i++) {
             charTable.getColumnModel().getColumn(i).setMaxWidth(35);
@@ -214,6 +214,7 @@ public class GUI implements Serializable {
             }
         }
     }
+
     //центрироваеие, выделение ячеек, offset
     public static class CellRenderForHex extends DefaultTableCellRenderer {
         @Override
@@ -350,7 +351,6 @@ public class GUI implements Serializable {
         return text.getText();
     }
     }
-
 
     // Метод для проверки, видима ли ячейка в таблице
     private static boolean isCellVisible(JTable table, int row, int column) {
