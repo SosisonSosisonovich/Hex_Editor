@@ -450,17 +450,21 @@ public class MenuBarEdit {
             for (int i = 0; i < arr.length; i++) {
                 searchBytes[i] = (byte) Integer.parseInt(arr[i], 16);
             }
+
             model.searchBytes(searchBytes);
             currentSearchIndex = 0; // Сброс к первому найденному результату
+
             highlightSearchResults(table, model, dialog);
+
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(null, "Неверные значения!");
+            JOptionPane.showMessageDialog(dialog, "Неверные значения!");
         }
     }
 
     //выделение найденых строк и прокрутка
     private void highlightSearchResults(JTable table, HexTableModel model, JDialog dialog) {
         List<Integer> searchResults = model.getSearchResults();
+
         if (!searchResults.isEmpty()) {
             table.setRowSelectionInterval(searchResults.get(currentSearchIndex), searchResults.get(currentSearchIndex));
             table.scrollRectToVisible(table.getCellRect(searchResults.get(currentSearchIndex), 0, true));
@@ -479,7 +483,7 @@ public class MenuBarEdit {
             }
             highlightSearchResults(table, model, dialog);
         } else {
-            JOptionPane.showMessageDialog(dialog, "No search results to navigate.");
+            JOptionPane.showMessageDialog(dialog, "Не найдено.");
         }
     }
 

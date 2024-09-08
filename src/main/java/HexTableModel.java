@@ -200,35 +200,90 @@ public class HexTableModel extends AbstractTableModel {
     public void searchBytes(byte[] searchBytes) {
         SwingUtilities.invokeLater(() -> {
             searchResults.clear();
-            try {
-                RandomAccessFile raf = this.file;
-                long segmentSize = 1024 * 1024;//для уменьшения нагрузки будем считывать данные по 1 мб за раз
-                long position = 0;// текущее положение в файле
 
-                while (position < fileLength) {
-                    long remaining = fileLength - position;
-                    long currentSegmentSize = Math.min(segmentSize, remaining);
+            if(file != null) {
+                try {
+                    RandomAccessFile raf = this.file;
+                    long segmentSize = 1024 * 1024;//для уменьшения нагрузки будем считывать данные по 1 мб за раз
+                    long position = 0;// текущее положение в файле
 
-                    byte[] segment = new byte[(int) currentSegmentSize];//данные, которые сейчас проверяются
-                    raf.seek(position);
-                    raf.readFully(segment);
+                    while (position < fileLength) {
+                        long remaining = fileLength - position;
+                        long currentSegmentSize = Math.min(segmentSize, remaining);
 
-                    for (int i = 0; i <= segment.length - searchBytes.length; i++) {
+                        byte[] segment = new byte[(int) currentSegmentSize];//данные, которые сейчас проверяются
+                        raf.seek(position);
+                        raf.readFully(segment);
+
+                        for (int i = 0; i <= segment.length - searchBytes.length; i++) {
+                            boolean match = true;
+                            for (int j = 0; j < searchBytes.length; j++) {
+                                if (segment[i + j] != searchBytes[j]) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                            if (match) {
+                                searchResults.add((int) (position / bytesPerRow + i / bytesPerRow));
+                            }
+                        }
+
+                        position += currentSegmentSize;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else{
+                int rowCount = getRowCount();
+                int colCount = getColumnCount();
+
+                for (int row = 0; row < rowCount; row++) {
+                    List<Byte> rowBytes = new ArrayList<>();
+
+                    // Проходим по всем столбцам в строке
+                    for (int col = 0; col < colCount; col++) {
+                        Object cellValue = getValueAt(row, col);
+
+                        if (cellValue != null && !cellValue.toString().trim().isEmpty()) {
+
+                            String hexString = cellValue.toString();
+                            int len = hexString.length();
+                            byte[] data = new byte[len / 2];
+
+                            for (int i = 0; i < len; i += 2) {
+                                data[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
+                                        + Character.digit(hexString.charAt(i+1), 16));
+                            }
+
+                            byte[] cellBytes = data;
+                            for (byte b : cellBytes) {
+                                rowBytes.add(b);
+                            }
+                        }
+                    }
+
+                    byte[] rowByteArray = new byte[rowBytes.size()];
+                    for (int i = 0; i < rowBytes.size(); i++) {
+                        rowByteArray[i] = rowBytes.get(i);
+                    }
+
+                    // Ищем последовательность байт в строке
+                    for (int i = 0; i <= rowByteArray.length - searchBytes.length; i++) {
                         boolean match = true;
                         for (int j = 0; j < searchBytes.length; j++) {
-                            if (segment[i + j] != searchBytes[j]) {
+                            if (rowByteArray[i + j] != searchBytes[j]) {
                                 match = false;
                                 break;
                             }
                         }
                         if (match) {
-                            searchResults.add((int) (position / bytesPerRow + i / bytesPerRow));
+                            searchResults.add(row);
+                            break; // Если нашли совпадение в строке, больше не ищем в этой строке
                         }
                     }
-                    position += currentSegmentSize;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+
+                fireTableDataChanged();
             }
             fireTableDataChanged();
         });
