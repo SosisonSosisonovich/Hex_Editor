@@ -63,7 +63,7 @@ public class GUI implements Serializable {
         JMenuBar jMenuBar = new JMenuBar();
         new MenuBarFile(jMenuBar, hexModel, charModel);
         new MenuBarEdit(jMenuBar,hexModel,charModel,hexTable,charTable);
-        new MenuBarView(jMenuBar,hexModel,hexTable);
+        new MenuBarView(jMenuBar,hexModel);
 
         hexTable.getTableHeader().setReorderingAllowed(false);
         charTable.getTableHeader().setReorderingAllowed(false);
