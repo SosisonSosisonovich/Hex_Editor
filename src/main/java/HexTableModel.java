@@ -282,8 +282,6 @@ public class HexTableModel extends AbstractTableModel {
                         }
                     }
                 }
-
-                fireTableDataChanged();
             }
             fireTableDataChanged();
         });

@@ -469,7 +469,8 @@ public class MenuBarEdit {
             table.setRowSelectionInterval(searchResults.get(currentSearchIndex), searchResults.get(currentSearchIndex));
             table.scrollRectToVisible(table.getCellRect(searchResults.get(currentSearchIndex), 0, true));
         } else {
-            JOptionPane.showMessageDialog(dialog, "Не найдено.");
+            JOptionPane.showMessageDialog(dialog, "Не найдено!!");
+            System.out.println(searchResults);
         }
     }
 
@@ -483,7 +484,7 @@ public class MenuBarEdit {
             }
             highlightSearchResults(table, model, dialog);
         } else {
-            JOptionPane.showMessageDialog(dialog, "Не найдено.");
+            JOptionPane.showMessageDialog(dialog, "Не найдено!");
         }
     }
 
