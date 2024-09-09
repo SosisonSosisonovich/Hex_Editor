@@ -48,7 +48,7 @@ public class GUI implements Serializable {
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 Component c = super.prepareRenderer(renderer, row, column);
                 if (hexModel.getSearchResults().contains(row)) {
-                    c.setBackground(new Color(135, 206, 235)); // Подсветка найденных строк
+                    c.setBackground(new Color(135, 206, 235));// Подсветка найденных строк
                 } else {
                     c.setBackground(Color.WHITE);
                 }

@@ -407,6 +407,8 @@ public class MenuBarEdit {
         buttPanel.add(prevButton);
         buttPanel.add(nextButton);
 
+
+
         hexButt.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -469,8 +471,7 @@ public class MenuBarEdit {
             table.setRowSelectionInterval(searchResults.get(currentSearchIndex), searchResults.get(currentSearchIndex));
             table.scrollRectToVisible(table.getCellRect(searchResults.get(currentSearchIndex), 0, true));
         } else {
-            JOptionPane.showMessageDialog(dialog, "Не найдено!!");
-            System.out.println(searchResults);
+            return;
         }
     }
 
@@ -483,8 +484,6 @@ public class MenuBarEdit {
                 currentSearchIndex = searchResults.size() - 1;
             }
             highlightSearchResults(table, model, dialog);
-        } else {
-            JOptionPane.showMessageDialog(dialog, "Не найдено!");
         }
     }
 

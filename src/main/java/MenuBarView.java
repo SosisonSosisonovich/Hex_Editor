@@ -79,7 +79,7 @@ public class MenuBarView {
 
         // Заполнение новой таблицы
         for (int row = 0; row < rowCount; row++) {
-            for (int col = 0; col < colCount; col += numBytes) {
+            for (int col = 1; col < colCount-1; col += numBytes) {
                 String combinedValue = "";
 
                 for (int i = 0; i < numBytes; i++) {

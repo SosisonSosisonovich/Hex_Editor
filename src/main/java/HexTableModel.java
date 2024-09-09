@@ -201,6 +201,7 @@ public class HexTableModel extends AbstractTableModel {
         SwingUtilities.invokeLater(() -> {
             searchResults.clear();
 
+            //если поиск по файлу
             if(file != null) {
                 try {
                     RandomAccessFile raf = this.file;
@@ -233,7 +234,9 @@ public class HexTableModel extends AbstractTableModel {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else{
+                //если поиск по обычной таблице
+            }
+            else{
                 int rowCount = getRowCount();
                 int colCount = getColumnCount();
 
@@ -283,6 +286,7 @@ public class HexTableModel extends AbstractTableModel {
                     }
                 }
             }
+
             fireTableDataChanged();
         });
     }
