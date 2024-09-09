@@ -122,7 +122,6 @@ public class CharTableModel extends AbstractTableModel {
         }
 
         try {
-            //byte newValue = (byte) Integer.parseInt(aValue.toString(), 16);
             char charValue = aValue.toString().charAt(0);
             byte newValue = (byte) charValue;
             if(file == null){
